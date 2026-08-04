@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settlement Tariff</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<h1>Settlement Tariff</h1>
+<p class="sub">Transcribed from settlement_tariff.pdf</p>
+<button class="toggle-btn" onclick="toggleTheme()" id="themeBtn">Switch to<br>Light Mode</button>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTariff(0)">CT Pay Rates A-Z (232)</button>
+  <button class="tab-btn" onclick="switchTariff(1)">Maine-Mass-NewHamp-RhodeIsland (237)</button>
+</div>
+
+<h2 id="tariffTitle"></h2>
+<p class="sub" id="tariffMeta"></p>
+
+<div class="controls">
+  <div>
+    <label for="originFilter">Origin city:</label><br>
+    <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven">
+  </div>
+  <div>
+    <label for="destFilter">Destination city:</label><br>
+    <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford">
+  </div>
+</div>
+
+<p class="count" id="rowCount"></p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th data-col="0">Origin City</th>
+      <th data-col="1">Destination City</th>
+      <th data-col="2">Old Rate</th>
+      <th data-col="3">New Rate</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/logic.js"></script>
+
+</body>
+</html>
