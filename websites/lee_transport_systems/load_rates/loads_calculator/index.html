@@ -3,11 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loads Calculator</title>
+<title>Loads Calculator — OCR test</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.4rem; }
+  .note { color: #666; font-size: 0.9rem; }
+  #status { margin: 1rem 0; font-weight: bold; }
+  pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+  button { padding: 0.5rem 1rem; font-size: 1rem; }
+</style>
 </head>
 <body>
 
-<h1>Under Development</h1>
+<h1>Loads Calculator — OCR test harness</h1>
+<p class="note">This page just verifies the /api/ocr backend works end to end. It is not the final tool.</p>
+
+<input type="file" id="photo" accept="image/*">
+<button id="upload">Upload &amp; extract</button>
+
+<div id="status"></div>
+<pre id="result"></pre>
+
+<script>
+const fileInput = document.getElementById('photo');
+const statusEl = document.getElementById('status');
+const resultEl = document.getElementById('result');
+
+document.getElementById('upload').addEventListener('click', async () => {
+  const file = fileInput.files[0];
+  if (!file) {
+    statusEl.textContent = 'Pick a photo first.';
+    return;
+  }
+
+  statusEl.textContent = 'Uploading and extracting... (this calls Claude, may take a few seconds)';
+  resultEl.textContent = '';
+
+  try {
+    const response = await fetch('/api/ocr', {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'image/jpeg' },
+      body: file,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      statusEl.textContent = 'Error (' + response.status + ')';
+      resultEl.textContent = JSON.stringify(data, null, 2);
+      return;
+    }
+
+    statusEl.textContent = 'Done.';
+    resultEl.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    statusEl.textContent = 'Request failed.';
+    resultEl.textContent = String(err);
+  }
+});
+</script>
 
 </body>
 </html>
