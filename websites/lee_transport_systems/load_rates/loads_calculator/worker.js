@@ -6,39 +6,46 @@
 // Report" via Claude Haiku 4.5 vision. ANTHROPIC_API_KEY is a Cloudflare secret —
 // never committed to this repo, never sent to the browser.
 
+// Constrains Claude's response to exactly this shape (Anthropic's structured-output
+// feature) — the API guarantees the match, so no JSON parsing/repair code is needed
+// anywhere below.
 const EXTRACTION_SCHEMA = {
   type: "object",
   properties: {
-    driver: { type: "string", description: "Driver name from the 'Driver:' field" },
-    shiftDate: { type: "string", description: "Date from the 'PM Shift' header, as printed" },
+    date: { type: "string", description: "Date from the 'PM Shift' header, as printed" },
+    driverName: { type: "string", description: "Driver name from the 'Driver:' field" },
     trips: {
       type: "array",
       items: {
         type: "object",
         properties: {
-          orderNumber: { type: "string", description: "The Order # for this trip" },
-          originTerminal: { type: "string", description: "Name of the LLD (loading terminal)" },
-          originLocation: { type: "string", description: "City, ST from the LLD address line" },
-          destinationName: { type: "string", description: "Name of the LUL (consignee)" },
-          destinationLocation: { type: "string", description: "City, ST from the LUL address line" },
+          tripNumber: { type: "string", description: "The number from the 'Trip:' field" },
+          orderNumber: { type: "string", description: "The number from the 'Order #:' field" },
+          lldName: { type: "string", description: "Name of the LLD (pickup terminal)" },
+          lldAddress: { type: "string", description: "Full address line printed under the LLD" },
+          lulName: { type: "string", description: "Name of the LUL (delivery consignee)" },
+          lulAddress: { type: "string", description: "Full address line printed under the LUL" },
         },
-        required: ["orderNumber", "originTerminal", "originLocation", "destinationName", "destinationLocation"],
+        required: ["tripNumber", "orderNumber", "lldName", "lldAddress", "lulName", "lulAddress"],
         additionalProperties: false,
       },
     },
-    startMileage: { type: "string", description: "Handwritten Start Mileage value, if present" },
-    totalFuel: { type: "string", description: "Handwritten Total Fuel value, if present" },
   },
-  required: ["driver", "shiftDate", "trips", "startMileage", "totalFuel"],
+  required: ["date", "driverName", "trips"],
   additionalProperties: false,
 };
 
+// The schema's per-field descriptions above already explain most of what to extract —
+// this only needs to cover the one thing that isn't obvious from field names alone:
+// how an LLD row and a LUL row pair up into a single trip.
 const EXTRACTION_PROMPT = `This is a photo of a LEETRANSSYSTEMS "Driver Summary Report". Extract the trip data.
 
-Each "Trip" block has one LLD row (the loading terminal — its address line ends in an origin city/state) and one LUL row (the consignee — its address line ends in a destination city/state). Multiple product/quantity lines under one LLD/LUL do not create extra trips — one Trip block is one trip.
+Each "Trip" block has one LLD row (the pickup terminal) and one LUL row (the delivery consignee) — pair them together as a single trip. Multiple product/quantity lines under one LLD/LUL do not create extra trips; one Trip block is one trip.`;
 
-Give each city/state as it's printed, in "City, ST" format.`;
-
+// Claude's API only accepts images as base64 text inside the JSON request body, not
+// raw binary — this converts the uploaded photo's bytes into that format. Chunked
+// because spreading a large image's bytes into String.fromCharCode() all at once can
+// exceed the JS engine's max function-argument limit.
 function base64FromArrayBuffer(buffer) {
   let binary = "";
   const bytes = new Uint8Array(buffer);
@@ -50,6 +57,8 @@ function base64FromArrayBuffer(buffer) {
 }
 
 async function handleOcr(request, env) {
+  // Fails fast with a clear message instead of letting Anthropic's own auth error
+  // (still caught below regardless) be the first sign something's misconfigured.
   if (!env.ANTHROPIC_API_KEY) {
     return new Response(JSON.stringify({ error: "Server is not configured with an API key." }), {
       status: 500,
@@ -57,6 +66,7 @@ async function handleOcr(request, env) {
     });
   }
 
+  // Rejects an obviously-wrong upload before spending an API call on it.
   const contentType = request.headers.get("content-type") || "";
   if (!contentType.startsWith("image/")) {
     return new Response(JSON.stringify({ error: "Expected an image upload (Content-Type: image/*)." }), {
@@ -72,6 +82,8 @@ async function handleOcr(request, env) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      // Read from the Cloudflare secret at request time — only readable here, at
+      // runtime, never present in this file or sent to the browser.
       "x-api-key": env.ANTHROPIC_API_KEY,
       "anthropic-version": "2023-06-01",
     },
@@ -87,12 +99,16 @@ async function handleOcr(request, env) {
           ],
         },
       ],
+      // Ties the request to EXTRACTION_SCHEMA above — this is what actually turns on
+      // the structured-output guarantee.
       output_config: {
         format: { type: "json_schema", schema: EXTRACTION_SCHEMA },
       },
     }),
   });
 
+  // Forwards Anthropic's own error message (e.g. low credit balance, bad key) instead
+  // of a generic failure, since the specific cause is only knowable from that message.
   if (!anthropicResponse.ok) {
     const errorBody = await anthropicResponse.text();
     return new Response(JSON.stringify({ error: "Claude API request failed", detail: errorBody }), {
@@ -102,6 +118,8 @@ async function handleOcr(request, env) {
   }
 
   const result = await anthropicResponse.json();
+  // Claude's response is a list of content blocks (could include other types, like
+  // tool calls, in general) — the schema-shaped JSON is always the text block.
   const textBlock = result.content?.find((block) => block.type === "text");
 
   if (!textBlock) {
@@ -121,6 +139,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // This script is the entry point for the whole site's Worker, not just this
+    // feature — everything except /api/ocr falls through automatically to static
+    // asset serving (configured in wrangler.toml), so no other routing belongs here.
     if (url.pathname === "/api/ocr" && request.method === "POST") {
       return handleOcr(request, env);
     }
