@@ -11,20 +11,20 @@
 <button class="toggle-btn" onclick="toggleTheme()" id="themeBtn">Switch to<br>Light Mode</button>
 
 <div class="rate-row">
-  <label for="hourlyRate">Hourly Rate ($):</label>
+  <label for="hourlyRate">Hourly Rate</label>
   <input id="hourlyRate" type="number" value="35" step="any" oninput="render()">
 </div>
 
 <div style="display: inline-block;">
 <table>
   <thead>
-    <tr><th>Miles</th><th>Decimal<br>Rate</th><th>Rounded<br>Rate</th><th>CPM</th></tr>
+    <tr><th>Miles</th><th>Rounded<br>Rate</th><th>CPM</th></tr>
   </thead>
   <tbody id="rows"></tbody>
 </table>
 
 <p id="disclaimer" style="font-size: 13px; color: var(--disclaimer); margin-top: 20px; box-sizing: border-box; text-align: left;">
-Disclaimer: This table assumes a semi truck traveling at an average of 50 MPH.<br><br>Yes, a semi truck can reach over 70 MPH but considering traffic/lights, city drives/hills and how slowly a semi truck gain speed, the average falls at 50 MPH.<br><br>The table also assumes 30 minutes to load and 30 minutes to unload.
+Disclaimer: This table uses a very specific formula to calculate the aproximate speed of a tractor trailer.<br><br>The table also assumes 30 minutes to load and 30 minutes to unload.
 </p>
 </div>
 

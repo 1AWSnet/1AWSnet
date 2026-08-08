@@ -9,8 +9,21 @@ function render() {
 
   for (let miles = 5; miles <= 150; miles += 5) {
     const roundTripMiles = miles * 2;
+    const average35MPH = roundTripMiles / 35;
+    const average40MPH = roundTripMiles / 40;
+    const average45MPH = roundTripMiles / 45;
     const average50MPH = roundTripMiles / 50;
-    const fullTripTime = average50MPH + 1;
+    let averageSpeedTime;
+    if (miles <= 15) {
+      averageSpeedTime = average35MPH;
+    } else if (miles <= 20) {
+      averageSpeedTime = average40MPH;
+    } else if (miles <= 40) {
+      averageSpeedTime = average45MPH;
+    } else {
+      averageSpeedTime = average50MPH;
+    }
+    const fullTripTime = averageSpeedTime + 1;
     const decimalRate = fullTripTime * hourlyRate;
     const roundedRate = roundToNearest5(decimalRate);
     const cpm = roundedRate / roundTripMiles;
@@ -18,7 +31,6 @@ function render() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${miles}</td>
-      <td>$${decimalRate.toFixed(2)}</td>
       <td>$${roundedRate}</td>
       <td>$${cpm.toFixed(2)}</td>
     `;
