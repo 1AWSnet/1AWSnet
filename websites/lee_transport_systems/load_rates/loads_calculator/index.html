@@ -3,93 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loads Calculator — OCR test</title>
+<title>Loads Calculator</title>
 <style>
   body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
   h1 { font-size: 1.4rem; }
-  .note { color: #666; font-size: 0.9rem; }
-  #status { margin: 1rem 0; font-weight: bold; }
-  pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
-  button { padding: 0.5rem 1rem; font-size: 1rem; }
+  ul { padding-left: 1.2rem; }
+  .wip { color: #666; }
 </style>
 </head>
 <body>
 
-<h1>Loads Calculator — OCR test harness</h1>
-<p class="note">This page just verifies the /api/ocr backend works end to end. It is not the final tool.</p>
-
-<input type="file" id="photo" accept="image/*">
-<button id="upload">Upload &amp; extract</button>
-
-<div id="status"></div>
-<pre id="result"></pre>
-
-<script>
-const fileInput = document.getElementById('photo');
-const statusEl = document.getElementById('status');
-const resultEl = document.getElementById('result');
-
-// Phone photos carry an EXIF orientation tag that browsers honor when displaying
-// the image (so it looks upright to the driver) but that Claude's vision API does
-// not — it reads raw pixel orientation, so a sideways-tagged photo arrives sideways
-// and is much more error-prone to extract from. Drawing through <img> + canvas bakes
-// in the correct orientation (browsers apply the EXIF hint during decode/draw) and the
-// canvas output has no orientation tag, so what gets uploaded is always upright.
-async function normalizeOrientation(file) {
-  const objectUrl = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = reject;
-      image.src = objectUrl;
-    });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    canvas.getContext('2d').drawImage(img, 0, 0);
-
-    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-  } finally {
-    URL.revokeObjectURL(objectUrl);
-  }
-}
-
-document.getElementById('upload').addEventListener('click', async () => {
-  const file = fileInput.files[0];
-  if (!file) {
-    statusEl.textContent = 'Pick a photo first.';
-    return;
-  }
-
-  statusEl.textContent = 'Uploading and extracting... (this calls Claude, may take a few seconds)';
-  resultEl.textContent = '';
-
-  try {
-    const normalized = await normalizeOrientation(file);
-    const response = await fetch('/api/ocr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'image/jpeg' },
-      body: normalized,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      statusEl.textContent = 'Error (' + response.status + ')';
-      resultEl.textContent = JSON.stringify(data, null, 2);
-      return;
-    }
-
-    statusEl.textContent = 'Done.';
-    resultEl.textContent = JSON.stringify(data, null, 2);
-  } catch (err) {
-    statusEl.textContent = 'Request failed.';
-    resultEl.textContent = String(err);
-  }
-});
-</script>
+<h1>Loads Calculator</h1>
+<ul>
+  <li><a href="haiku/">Haiku OCR</a></li>
+  <li><a href="vision/">Vision OCR</a> <span class="wip">(coming soon)</span></li>
+</ul>
 
 </body>
 </html>

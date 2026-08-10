@@ -1,5 +1,5 @@
 name = "lee-transport-systems"
-main = "load_rates/loads_calculator/worker.js"
+main = "load_rates/loads_calculator/haiku/worker.js"
 compatibility_date = "2026-08-05"
 
 [assets]
