@@ -9,50 +9,56 @@
 // Constrains Claude's response to exactly this shape (Anthropic's structured-output
 // feature) — the API guarantees the match, so no JSON parsing/repair code is needed
 // anywhere below.
+//
+// This is deliberately a flat list of rows, not a list of already-paired trips. Pairing
+// an LLD row with the right LUL row for a given trip is a mechanical grouping task once
+// each row's own trip number is known, and doing it in JS (see structure.js) makes it
+// exact instead of leaving it to the model — asking Claude to both transcribe *and*
+// correctly pair rows itself has repeatedly produced mismatched pairings (see git log
+// for this file) when the page has repeated or visually similar text across trips.
+// Each entry only has to answer questions a person could answer by looking at that one
+// row in isolation: which Trip header is directly above it, and what's printed on it.
 const EXTRACTION_SCHEMA = {
   type: "object",
   properties: {
     date: { type: "string", description: "Date from the 'PM Shift' header, as printed" },
     driverName: { type: "string", description: "Driver name from the 'Driver:' field" },
-    trips: {
+    rows: {
       type: "array",
+      description: "One entry per row explicitly tagged LLD or LUL in the left margin, in the order they appear on the page.",
       items: {
         type: "object",
         properties: {
-          tripNumber: { type: "string", description: "The number from the 'Trip:' field" },
-          orderNumber: { type: "string", description: "The number from the 'Order #:' field" },
-          lldName: { type: "string", description: "Name of the LLD (pickup terminal)" },
-          lldAddress: { type: "string", description: "Full address line printed under the LLD" },
-          lulName: { type: "string", description: "Name of the LUL (delivery consignee)" },
-          lulAddress: { type: "string", description: "Full address line printed under the LUL" },
+          tripNumber: { type: "string", description: "The number from the 'Trip:' header printed directly above this row" },
+          rowType: { type: "string", enum: ["LLD", "LUL"], description: "The tag ('LLD' or 'LUL') printed in the left margin next to this row" },
+          orderNumber: { type: "string", description: "This row's own 'Order #:' value" },
+          name: { type: "string", description: "The terminal/consignee name printed on this row" },
+          address: { type: "string", description: "The full address line printed under the name on this row" },
         },
-        required: ["tripNumber", "orderNumber", "lldName", "lldAddress", "lulName", "lulAddress"],
+        required: ["tripNumber", "rowType", "orderNumber", "name", "address"],
         additionalProperties: false,
       },
     },
   },
-  required: ["date", "driverName", "trips"],
+  required: ["date", "driverName", "rows"],
   additionalProperties: false,
 };
 
 // The schema's per-field descriptions above already explain most of what to extract —
-// this only needs to cover the four things that aren't obvious from field names alone:
-// how an LLD row and a LUL row pair up into a single trip, which number on the page
-// actually identifies that trip (the "Seq #" column resets/overlaps per row and is not
-// the trip number, which has caused mismatched LLD/LUL pairings in the past), that
-// a Trip block can contain a leading dispatch-note row with no LLD/LUL tag (e.g. a plain
-// commodity/quantity line like "2500 DIESEL") that must not be mistaken for the LLD row —
-// it isn't for the driver, not an address, and has been misread as the origin before —
-// and that the same LLD terminal can legitimately be the pickup for more than one Trip
-// block (one load, multiple drops), which has caused its address to also get echoed
-// into the LUL fields of that trip instead of the actual, different delivery address.
-const EXTRACTION_PROMPT = `This is a photo of a LEETRANSSYSTEMS "Driver Summary Report". Extract the trip data.
+// this only needs to cover the three things that aren't obvious from field names alone:
+// which number identifies a row's trip (the "Seq #" column resets/overlaps per row and
+// is not the trip number — using it in place of the nearest "Trip:" header has caused
+// mismatched pairings in the past), that a Trip block can contain a leading dispatch-note
+// row with no LLD/LUL tag (e.g. a plain commodity/quantity line like "2500 DIESEL") that
+// must be skipped rather than reported as a row, and that this is a transcription task,
+// not a pairing task — Claude reports each tagged row on its own, and the grouping into
+// trips happens afterward in code (structure.js), where it can't go wrong the way the
+// model has before when a page had repeated or visually similar LLD/LUL text.
+const EXTRACTION_PROMPT = `This is a photo of a LEETRANSSYSTEMS "Driver Summary Report". Extract the rows.
 
-Each "Trip" block is delimited by a "Trip: N" header row and contains one LLD row (the pickup terminal) and one LUL row (the delivery consignee) — pair them together as a single trip using that "Trip: N" header, not the small "Seq #" number printed to the left of each row. The Seq # is just a row counter and does not indicate which trip a row belongs to — ignore it entirely. Multiple product/quantity lines under one LLD/LUL do not create extra trips; one Trip block is one trip.
+List one entry per row that is explicitly tagged "LLD" or "LUL" in the left margin, in the order they appear on the page. For each one, record which "Trip: N" header is printed directly above that row — not the small "Seq #" number printed to the left of the row, which is just a row counter and does not indicate which trip a row belongs to — along with whether the row itself is tagged "LLD" or "LUL", and that row's own order number, name, and address.
 
-Only use rows explicitly tagged "LLD" or "LUL" in the left margin as the pickup/delivery rows. A Trip block may contain an extra row with no "LLD"/"LUL" tag — this is a dispatch note for the driver (e.g. a bare product/quantity line like "2500 DIESEL"), not an address, and must be ignored entirely. Never use text from an untagged row as lldName, lldAddress, lulName, or lulAddress — those four fields must come only from the row explicitly tagged "LLD" and the row explicitly tagged "LUL" within that same Trip block.
-
-The same LLD terminal name and address can appear on the page more than once, as the pickup for two or more separate Trip blocks — that is normal, not an error. When this happens, do not let the repeated LLD text leak into a nearby trip's LUL fields. lulName and lulAddress must always be transcribed from the row explicitly tagged "LUL" inside that same Trip block, even when it is visually close to, or shares a city with, an LLD row from a different trip.`;
+Do not create an entry for a row with no "LLD"/"LUL" tag — a Trip block can contain a dispatch note for the driver (e.g. a bare product/quantity line like "2500 DIESEL") that is not an address and must be skipped entirely. Do not try to match or pair rows with each other — just report each tagged row's own trip number, type, and fields exactly as printed on that row; nothing else needs to be inferred.`;
 
 // Claude's API only accepts images as base64 text inside the JSON request body, not
 // raw binary — this converts the uploaded photo's bytes into that format. Chunked
