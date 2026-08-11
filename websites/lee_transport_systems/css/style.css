@@ -163,18 +163,23 @@ tr:nth-child(even) td { background: var(--bg-alt); }
 #status { margin: 1rem 0; font-weight: bold; }
 pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; text-align: left; border-radius: 6px; }
 #tripsTable { display: none; }
-#tripsTable td, #tripsTable th { text-align: left; white-space: normal; }
+#tripsTable td, #tripsTable th { text-align: center; white-space: normal; }
 .trip-bubble {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 50%;
   background: var(--bg-alt);
   border: 1px solid var(--red);
   color: var(--red);
-  border-radius: 999px;
-  padding: 1px 9px;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 3px;
 }
+.rate-amount { font-size: 3em; font-weight: 700; color: var(--red); }
 .unmatched { color: var(--red); font-weight: bold; }
 #summary { margin-top: 0.75rem; font-weight: bold; }
 details { margin-top: 1.5rem; text-align: left; }
