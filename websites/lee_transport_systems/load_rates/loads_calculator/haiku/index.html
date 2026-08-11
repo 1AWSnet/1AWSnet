@@ -26,7 +26,7 @@
 
 <table id="tripsTable">
   <thead>
-    <tr><th>Trip</th><th>Order #</th><th>Origin</th><th>Destination</th><th>Rate</th></tr>
+    <tr><th>Trip &amp;<br>Order</th><th>Origin</th><th>Destination</th><th>Rate</th></tr>
   </thead>
   <tbody id="tripsBody"></tbody>
 </table>
@@ -71,12 +71,22 @@ function makeMultilineCell(lines, className) {
   return td;
 }
 
+function makeTripOrderCell(tripNumber, orderNumber) {
+  const td = document.createElement('td');
+  const bubble = document.createElement('span');
+  bubble.className = 'trip-bubble';
+  bubble.textContent = `(${tripNumber})`;
+  td.appendChild(bubble);
+  td.appendChild(document.createElement('br'));
+  td.appendChild(document.createTextNode(orderNumber));
+  return td;
+}
+
 function renderTrips(structured) {
   tripsBody.innerHTML = '';
   for (const trip of structured.trips) {
     const tr = document.createElement('tr');
-    tr.appendChild(makeCell(trip.tripNumber));
-    tr.appendChild(makeCell(trip.orderNumber));
+    tr.appendChild(makeTripOrderCell(trip.tripNumber, trip.orderNumber));
     const originLines = trip.origin.terminalLines || [`${trip.origin.name} — ${trip.origin.address}`];
     tr.appendChild(makeMultilineCell(originLines));
     tr.appendChild(makeCell(`${trip.destination.name} — ${trip.destination.address}`));
