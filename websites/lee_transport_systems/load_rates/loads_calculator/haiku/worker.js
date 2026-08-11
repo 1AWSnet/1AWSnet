@@ -36,18 +36,23 @@ const EXTRACTION_SCHEMA = {
 };
 
 // The schema's per-field descriptions above already explain most of what to extract —
-// this only needs to cover the three things that aren't obvious from field names alone:
+// this only needs to cover the four things that aren't obvious from field names alone:
 // how an LLD row and a LUL row pair up into a single trip, which number on the page
 // actually identifies that trip (the "Seq #" column resets/overlaps per row and is not
-// the trip number, which has caused mismatched LLD/LUL pairings in the past), and that
+// the trip number, which has caused mismatched LLD/LUL pairings in the past), that
 // a Trip block can contain a leading dispatch-note row with no LLD/LUL tag (e.g. a plain
 // commodity/quantity line like "2500 DIESEL") that must not be mistaken for the LLD row —
-// it isn't for the driver, not an address, and has been misread as the origin before.
+// it isn't for the driver, not an address, and has been misread as the origin before —
+// and that the same LLD terminal can legitimately be the pickup for more than one Trip
+// block (one load, multiple drops), which has caused its address to also get echoed
+// into the LUL fields of that trip instead of the actual, different delivery address.
 const EXTRACTION_PROMPT = `This is a photo of a LEETRANSSYSTEMS "Driver Summary Report". Extract the trip data.
 
 Each "Trip" block is delimited by a "Trip: N" header row and contains one LLD row (the pickup terminal) and one LUL row (the delivery consignee) — pair them together as a single trip using that "Trip: N" header, not the small "Seq #" number printed to the left of each row. The Seq # is just a row counter and does not indicate which trip a row belongs to — ignore it entirely. Multiple product/quantity lines under one LLD/LUL do not create extra trips; one Trip block is one trip.
 
-Only use rows explicitly tagged "LLD" or "LUL" in the left margin as the pickup/delivery rows. A Trip block may contain an extra row with no "LLD"/"LUL" tag — this is a dispatch note for the driver (e.g. a bare product/quantity line like "2500 DIESEL"), not an address, and must be ignored entirely. Never use text from an untagged row as lldName, lldAddress, lulName, or lulAddress — those four fields must come only from the row explicitly tagged "LLD" and the row explicitly tagged "LUL" within that same Trip block.`;
+Only use rows explicitly tagged "LLD" or "LUL" in the left margin as the pickup/delivery rows. A Trip block may contain an extra row with no "LLD"/"LUL" tag — this is a dispatch note for the driver (e.g. a bare product/quantity line like "2500 DIESEL"), not an address, and must be ignored entirely. Never use text from an untagged row as lldName, lldAddress, lulName, or lulAddress — those four fields must come only from the row explicitly tagged "LLD" and the row explicitly tagged "LUL" within that same Trip block.
+
+The same LLD terminal name and address can appear on the page more than once, as the pickup for two or more separate Trip blocks — that is normal, not an error. When this happens, do not let the repeated LLD text leak into a nearby trip's LUL fields. lulName and lulAddress must always be transcribed from the row explicitly tagged "LUL" inside that same Trip block, even when it is visually close to, or shares a city with, an LLD row from a different trip.`;
 
 // Claude's API only accepts images as base64 text inside the JSON request body, not
 // raw binary — this converts the uploaded photo's bytes into that format. Chunked
