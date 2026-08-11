@@ -11,6 +11,12 @@
   #status { margin: 1rem 0; font-weight: bold; }
   pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
   button { padding: 0.5rem 1rem; font-size: 1rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; display: none; }
+  th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; vertical-align: top; font-size: 0.9rem; }
+  th { background: #f4f4f4; }
+  .unmatched { color: #b00020; font-weight: bold; }
+  #summary { margin-top: 0.75rem; font-weight: bold; }
+  details { margin-top: 1.5rem; }
 </style>
 </head>
 <body>
@@ -22,12 +28,60 @@
 <button id="upload">Upload &amp; extract</button>
 
 <div id="status"></div>
-<pre id="result"></pre>
 
+<table id="tripsTable">
+  <thead>
+    <tr><th>Trip</th><th>Order #</th><th>Origin</th><th>Destination</th><th>Rate</th></tr>
+  </thead>
+  <tbody id="tripsBody"></tbody>
+</table>
+<div id="summary"></div>
+
+<details id="rawDetails" style="display: none;">
+  <summary>Raw OCR JSON</summary>
+  <pre id="result"></pre>
+</details>
+
+<script src="../../settlement_tariff/js/data.js"></script>
+<script src="structure.js"></script>
 <script>
 const fileInput = document.getElementById('photo');
 const statusEl = document.getElementById('status');
 const resultEl = document.getElementById('result');
+const rawDetails = document.getElementById('rawDetails');
+const tripsTable = document.getElementById('tripsTable');
+const tripsBody = document.getElementById('tripsBody');
+const summaryEl = document.getElementById('summary');
+
+function makeCell(text, className) {
+  const td = document.createElement('td');
+  if (className) td.className = className;
+  td.textContent = text;
+  return td;
+}
+
+// Built with DOM APIs (not innerHTML) so OCR'd text is always treated as plain text,
+// never parsed as markup, however it's punctuated.
+function renderTrips(structured) {
+  tripsBody.innerHTML = '';
+  for (const trip of structured.trips) {
+    const tr = document.createElement('tr');
+    tr.appendChild(makeCell(trip.tripNumber));
+    tr.appendChild(makeCell(trip.orderNumber));
+    tr.appendChild(makeCell(`${trip.origin.name} — ${trip.origin.address}`));
+    tr.appendChild(makeCell(`${trip.destination.name} — ${trip.destination.address}`));
+    const rateText = trip.rate
+      ? `$${trip.rate.newRate} (Tariff ${trip.rate.tariffNumber})`
+      : 'No tariff match — verify manually';
+    tr.appendChild(makeCell(rateText, trip.rate ? '' : 'unmatched'));
+    tripsBody.appendChild(tr);
+  }
+  tripsTable.style.display = structured.trips.length ? 'table' : 'none';
+
+  const totalText = `Matched total: $${structured.matchedTotal}` +
+    (structured.unmatchedCount ? ` (+ ${structured.unmatchedCount} trip(s) with no tariff match)` : '');
+  summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
+}
 
 // Phone photos carry an EXIF orientation tag that browsers honor when displaying
 // the image (so it looks upright to the driver) but that Claude's vision API does
@@ -65,6 +119,9 @@ document.getElementById('upload').addEventListener('click', async () => {
 
   statusEl.textContent = 'Uploading and extracting... (this calls Claude, may take a few seconds)';
   resultEl.textContent = '';
+  rawDetails.style.display = 'none';
+  tripsTable.style.display = 'none';
+  summaryEl.textContent = '';
 
   try {
     const normalized = await normalizeOrientation(file);
@@ -75,18 +132,20 @@ document.getElementById('upload').addEventListener('click', async () => {
     });
 
     const data = await response.json();
+    resultEl.textContent = JSON.stringify(data, null, 2);
+    rawDetails.style.display = 'block';
 
     if (!response.ok) {
       statusEl.textContent = 'Error (' + response.status + ')';
-      resultEl.textContent = JSON.stringify(data, null, 2);
       return;
     }
 
     statusEl.textContent = 'Done.';
-    resultEl.textContent = JSON.stringify(data, null, 2);
+    renderTrips(structureOcrResult(data));
   } catch (err) {
     statusEl.textContent = 'Request failed.';
     resultEl.textContent = String(err);
+    rawDetails.style.display = 'block';
   }
 });
 </script>
