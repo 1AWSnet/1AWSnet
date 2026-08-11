@@ -4,28 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loads Calculator — OCR test</title>
-<style>
-  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
-  h1 { font-size: 1.4rem; }
-  .note { color: #666; font-size: 0.9rem; }
-  #status { margin: 1rem 0; font-weight: bold; }
-  pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
-  button { padding: 0.5rem 1rem; font-size: 1rem; }
-  table { width: 100%; border-collapse: collapse; margin-top: 1rem; display: none; }
-  th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; vertical-align: top; font-size: 0.9rem; }
-  th { background: #f4f4f4; }
-  .unmatched { color: #b00020; font-weight: bold; }
-  #summary { margin-top: 0.75rem; font-weight: bold; }
-  details { margin-top: 1.5rem; }
-</style>
+<link rel="stylesheet" href="../../../css/style.css">
 </head>
 <body>
 
-<h1>Loads Calculator — OCR test harness</h1>
-<p class="note">This page just verifies the /api/ocr backend works end to end. It is not the final tool.</p>
+<div class="site-header">
+  <a class="home-link" href="../../../">Lee Transport Systems</a>
+  <button class="toggle-btn" onclick="toggleTheme()" id="themeBtn">Switch to<br>Light Mode</button>
+</div>
 
+<div class="page">
+<h1>Loads Calculator — OCR test harness</h1>
+<p class="sub">This page just verifies the /api/ocr backend works end to end. It is not the final tool.</p>
+
+<div class="controls">
 <input type="file" id="photo" accept="image/*">
 <button id="upload">Upload &amp; extract</button>
+</div>
 
 <div id="status"></div>
 
@@ -42,6 +37,9 @@
   <pre id="result"></pre>
 </details>
 
+</div>
+
+<script src="../../../js/theme.js"></script>
 <script src="../../settlement_tariff/js/data.js"></script>
 <script src="structure.js"></script>
 <script>

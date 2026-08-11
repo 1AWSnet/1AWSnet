@@ -4,13 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Settlement Tariff</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
 
+<div class="site-header">
+  <a class="home-link" href="../../">Lee Transport Systems</a>
+  <button class="toggle-btn" onclick="toggleTheme()" id="themeBtn">Switch to<br>Light Mode</button>
+</div>
+
+<div class="page">
 <h1>Settlement Tariff</h1>
 <p class="sub">Transcribed from settlement_tariff.pdf</p>
-<button class="toggle-btn" onclick="toggleTheme()" id="themeBtn">Switch to<br>Light Mode</button>
 
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTariff(0)">CT Pay Rates A-Z (232)</button>
@@ -46,9 +51,10 @@
   <tbody id="rows"></tbody>
 </table>
 </div>
+</div>
 
+<script src="../../js/theme.js"></script>
 <script src="js/data.js"></script>
-<script src="js/theme.js"></script>
 <script src="js/logic.js"></script>
 
 </body>
