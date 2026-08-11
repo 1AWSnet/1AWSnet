@@ -174,12 +174,12 @@ pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem;
   border-radius: 50%;
   background: var(--bg-alt);
   border: 1px solid var(--red);
-  color: var(--red);
+  color: var(--text);
   font-size: 0.8rem;
   font-weight: 700;
   margin-bottom: 3px;
 }
-.rate-amount { font-size: 3em; font-weight: 700; color: var(--red); }
+.rate-amount { font-size: 1.5em; font-weight: 700; color: var(--text); }
 .unmatched { color: var(--red); font-weight: bold; }
 #summary { margin-top: 0.75rem; font-weight: bold; }
 details { margin-top: 1.5rem; text-align: left; }
