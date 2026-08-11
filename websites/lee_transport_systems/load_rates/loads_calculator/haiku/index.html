@@ -41,6 +41,7 @@
 
 <script src="../../../js/theme.js"></script>
 <script src="../../settlement_tariff/js/data.js"></script>
+<script src="terminals.js"></script>
 <script src="structure.js"></script>
 <script>
 const fileInput = document.getElementById('photo');
@@ -60,13 +61,24 @@ function makeCell(text, className) {
 
 // Built with DOM APIs (not innerHTML) so OCR'd text is always treated as plain text,
 // never parsed as markup, however it's punctuated.
+function makeMultilineCell(lines, className) {
+  const td = document.createElement('td');
+  if (className) td.className = className;
+  lines.forEach((line, i) => {
+    if (i > 0) td.appendChild(document.createElement('br'));
+    td.appendChild(document.createTextNode(line));
+  });
+  return td;
+}
+
 function renderTrips(structured) {
   tripsBody.innerHTML = '';
   for (const trip of structured.trips) {
     const tr = document.createElement('tr');
     tr.appendChild(makeCell(trip.tripNumber));
     tr.appendChild(makeCell(trip.orderNumber));
-    tr.appendChild(makeCell(`${trip.origin.name} — ${trip.origin.address}`));
+    const originLines = trip.origin.terminalLines || [`${trip.origin.name} — ${trip.origin.address}`];
+    tr.appendChild(makeMultilineCell(originLines));
     tr.appendChild(makeCell(`${trip.destination.name} — ${trip.destination.address}`));
     const rateText = trip.rate
       ? `$${trip.rate.newRate} (Tariff ${trip.rate.tariffNumber})`

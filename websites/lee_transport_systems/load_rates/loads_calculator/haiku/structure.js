@@ -3,8 +3,8 @@
 // extra Haiku call per photo — so the extraction schema stays a plain transcription
 // of what's printed on the page, and all business logic (city/state parsing, tariff
 // lookup, totals) lives here where it can be fixed without touching the OCR prompt.
-// Depends on CT_TARIFF/NE_TARIFF from ../../settlement_tariff/js/data.js, loaded
-// before this script.
+// Depends on CT_TARIFF/NE_TARIFF from ../../settlement_tariff/js/data.js and
+// findTerminal from terminals.js, both loaded before this script.
 
 const TARIFFS = [CT_TARIFF, NE_TARIFF];
 
@@ -46,7 +46,12 @@ function structureOcrResult(ocrResult) {
     return {
       tripNumber: trip.tripNumber,
       orderNumber: trip.orderNumber,
-      origin: { name: trip.lldName, address: trip.lldAddress, ...origin },
+      origin: {
+        name: trip.lldName,
+        address: trip.lldAddress,
+        ...origin,
+        terminalLines: findTerminal(trip.lldAddress),
+      },
       destination: { name: trip.lulName, address: trip.lulAddress, ...destination },
       rate,
     };
