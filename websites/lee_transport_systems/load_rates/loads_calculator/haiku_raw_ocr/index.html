@@ -83,14 +83,9 @@ function makeTripOrderCell(tripNumber, orderNumber) {
 
 function makeRateCell(trip) {
   const td = document.createElement('td');
-  if (!trip.rate) {
-    td.className = 'unmatched';
-    td.textContent = 'No tariff match — verify manually';
-    return td;
-  }
   const amount = document.createElement('span');
-  amount.className = 'rate-amount';
-  amount.textContent = `$${trip.rate.newRate}`;
+  amount.className = trip.rate ? 'rate-amount' : 'rate-amount unmatched';
+  amount.textContent = trip.rate ? `$${trip.rate.newRate}` : '$??';
   td.appendChild(amount);
   return td;
 }
@@ -113,8 +108,8 @@ function renderTrips(structured) {
   for (const trip of structured.trips) {
     const tr = document.createElement('tr');
     tr.appendChild(makeTripOrderCell(trip.tripNumber, trip.orderNumber));
-    tr.appendChild(makeMultilineCell(originDisplay(trip)));
-    tr.appendChild(makeCell(destinationDisplay(trip)));
+    tr.appendChild(makeMultilineCell(originDisplay(trip), trip.origin.name === '(missing)' ? 'unmatched' : ''));
+    tr.appendChild(makeCell(destinationDisplay(trip), trip.destination.name === '(missing)' ? 'unmatched' : ''));
     tr.appendChild(makeRateCell(trip));
     tripsBody.appendChild(tr);
   }
