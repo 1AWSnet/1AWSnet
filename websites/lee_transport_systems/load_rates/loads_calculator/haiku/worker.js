@@ -155,13 +155,21 @@ async function handleOcr(request, env) {
 
 // Diagnostic-only prompt, not used by any page in normal operation. Asks Haiku to
 // transcribe a photo with no schema and no instructions at all about trips, LLD/LUL,
-// or structure — just whatever its own natural reading order produces. Exists so that
-// reading order can be collected across many real photos (via the haiku_raw_ocr sandbox
-// page) and compared for consistency before deciding whether a parser built entirely
-// out of our own regex, reading Haiku's raw text directly, can replace EXTRACTION_SCHEMA
-// above. Deliberately kept as a separate function/route rather than merged into
-// handleOcr, so nothing about the existing /api/ocr path is touched by this addition.
-const RAW_TRANSCRIPTION_PROMPT = `Transcribe every piece of text visible in this photo, exactly as printed. Output only the raw transcribed text, in the order you read it off the page — no commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;
+// or structure — just whatever its own natural reading order produces, plus exactly
+// two things: read the page upright regardless of how the photo itself is rotated
+// (the client-side EXIF fix in normalizeOrientation() only corrects a phone's reported
+// orientation, not a document photographed sideways on a physical page), and don't
+// use extra spacing to recreate the page's visual layout — some photos were coming
+// back with wide gaps simulating column position instead of plain running text, which
+// isn't useful for a parser that's going to work off the text stream itself. Exists so
+// that reading order can be collected across many real photos (via the haiku_raw_ocr
+// sandbox page) and compared for consistency before deciding whether a parser built
+// entirely out of our own regex, reading Haiku's raw text directly, can replace
+// EXTRACTION_SCHEMA above. Deliberately kept as a separate function/route rather than
+// merged into handleOcr, so nothing about the existing /api/ocr path is touched here.
+const RAW_TRANSCRIPTION_PROMPT = `Transcribe every piece of text visible in this photo, exactly as printed. If the photo itself is rotated or sideways, read the text as if it were upright — describe what the text says, not how the photo is oriented.
+
+Output only the raw transcribed text, in the order you read it off the page, as plain running text. Do not add extra spaces, indentation, or blank lines to represent where words are positioned on the page — use only normal single spaces and line breaks, the same as you would to write out what the page says as continuous text. No commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;
 
 async function handleOcrRaw(request, env) {
   if (!env.ANTHROPIC_API_KEY) {
