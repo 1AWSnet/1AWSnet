@@ -15,24 +15,115 @@
 
 <div class="page">
 <h1>Raw OCR sandbox</h1>
-<p class="sub">Diagnostic tool, not the final product. Asks Haiku to transcribe a photo with no schema and no trip/LLD/LUL instructions at all, so its natural reading order can be collected across many real photos and compared for consistency.</p>
+<p class="sub">Real-world test of the raw-text + regex parsing approach. Haiku transcribes with no schema; everything else (trip pairing, tariff lookup) runs through the same structureOcrResult() the working tool uses.</p>
 
 <div class="controls">
 <input type="file" id="photo" accept="image/*">
-<button id="upload">Upload &amp; transcribe</button>
+<button id="upload">Upload &amp; extract</button>
 </div>
 
 <div id="status"></div>
 
-<pre id="result"></pre>
+<table id="tripsTable">
+  <thead>
+    <tr><th>Trip &amp;<br>Order #</th><th>Origin</th><th>Destination</th><th>Rate</th></tr>
+  </thead>
+  <tbody id="tripsBody"></tbody>
+</table>
+<div id="summary"></div>
+
+<details id="rawDetails" style="display: none;">
+  <summary>Raw OCR text</summary>
+  <pre id="result"></pre>
+</details>
 
 </div>
 
 <script src="../../../js/theme.js"></script>
+<script src="../../settlement_tariff/js/data.js"></script>
+<script src="../haiku/terminals.js"></script>
+<script src="../haiku/structure.js"></script>
+<script src="parse-raw-text.js"></script>
 <script>
 const fileInput = document.getElementById('photo');
 const statusEl = document.getElementById('status');
 const resultEl = document.getElementById('result');
+const rawDetails = document.getElementById('rawDetails');
+const tripsTable = document.getElementById('tripsTable');
+const tripsBody = document.getElementById('tripsBody');
+const summaryEl = document.getElementById('summary');
+
+function makeCell(text, className) {
+  const td = document.createElement('td');
+  if (className) td.className = className;
+  td.textContent = text;
+  return td;
+}
+
+function makeMultilineCell(lines, className) {
+  const td = document.createElement('td');
+  if (className) td.className = className;
+  lines.forEach((line, i) => {
+    if (i > 0) td.appendChild(document.createElement('br'));
+    td.appendChild(document.createTextNode(line));
+  });
+  return td;
+}
+
+function makeTripOrderCell(tripNumber, orderNumber) {
+  const td = document.createElement('td');
+  const bubble = document.createElement('span');
+  bubble.className = 'trip-bubble';
+  bubble.textContent = tripNumber;
+  td.appendChild(bubble);
+  td.appendChild(document.createElement('br'));
+  td.appendChild(document.createTextNode(orderNumber));
+  return td;
+}
+
+function makeRateCell(trip) {
+  const td = document.createElement('td');
+  if (!trip.rate) {
+    td.className = 'unmatched';
+    td.textContent = 'No tariff match — verify manually';
+    return td;
+  }
+  const amount = document.createElement('span');
+  amount.className = 'rate-amount';
+  amount.textContent = `$${trip.rate.newRate}`;
+  td.appendChild(amount);
+  return td;
+}
+
+// structureOcrResult() (reused as-is from ../haiku/structure.js) flags a trip number
+// that came up short an LLD or LUL row with its MISSING_ROW placeholder, whose name is
+// literally "(missing)". Swap that for a clearer flag here at render time only — no
+// change to the shared, working structure.js needed for that.
+function originDisplay(trip) {
+  if (trip.origin.name === '(missing)') return ['UNRECOGNIZED!'];
+  return trip.origin.terminalLines || [`${trip.origin.name} — ${trip.origin.address}`];
+}
+function destinationDisplay(trip) {
+  if (trip.destination.name === '(missing)') return 'UNRECOGNIZED!';
+  return trip.destination.city || `${trip.destination.name} — ${trip.destination.address}`;
+}
+
+function renderTrips(structured) {
+  tripsBody.innerHTML = '';
+  for (const trip of structured.trips) {
+    const tr = document.createElement('tr');
+    tr.appendChild(makeTripOrderCell(trip.tripNumber, trip.orderNumber));
+    tr.appendChild(makeMultilineCell(originDisplay(trip)));
+    tr.appendChild(makeCell(destinationDisplay(trip)));
+    tr.appendChild(makeRateCell(trip));
+    tripsBody.appendChild(tr);
+  }
+  tripsTable.style.display = structured.trips.length ? 'table' : 'none';
+
+  const totalText = `Matched total: $${structured.matchedTotal}` +
+    (structured.unmatchedCount ? ` (+ ${structured.unmatchedCount} trip(s) with no tariff match)` : '');
+  summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
+}
 
 // Phone photos carry an EXIF orientation tag that browsers honor when displaying
 // the image (so it looks upright to the driver) but that Claude's vision API does
@@ -68,8 +159,11 @@ document.getElementById('upload').addEventListener('click', async () => {
     return;
   }
 
-  statusEl.textContent = 'Uploading and transcribing... (this calls Claude, may take a few seconds)';
+  statusEl.textContent = 'Uploading and extracting... (this calls Claude, may take a few seconds)';
   resultEl.textContent = '';
+  rawDetails.style.display = 'none';
+  tripsTable.style.display = 'none';
+  summaryEl.textContent = '';
 
   try {
     const normalized = await normalizeOrientation(file);
@@ -80,18 +174,20 @@ document.getElementById('upload').addEventListener('click', async () => {
     });
 
     const text = await response.text();
+    resultEl.textContent = text;
+    rawDetails.style.display = 'block';
 
     if (!response.ok) {
       statusEl.textContent = 'Error (' + response.status + ')';
-      resultEl.textContent = text;
       return;
     }
 
-    statusEl.textContent = 'Done. Select all the text below and copy it.';
-    resultEl.textContent = text;
+    statusEl.textContent = 'Done.';
+    renderTrips(structureOcrResult(parseRawTextToRows(text)));
   } catch (err) {
     statusEl.textContent = 'Request failed.';
     resultEl.textContent = String(err);
+    rawDetails.style.display = 'block';
   }
 });
 </script>
