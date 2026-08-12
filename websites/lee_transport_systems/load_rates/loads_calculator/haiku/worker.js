@@ -153,15 +153,98 @@ async function handleOcr(request, env) {
   });
 }
 
+// Diagnostic-only prompt, not used by any page in normal operation. Asks Haiku to
+// transcribe a photo with no schema and no instructions at all about trips, LLD/LUL,
+// or structure — just whatever its own natural reading order produces. Exists so that
+// reading order can be collected across many real photos (via the haiku_raw_ocr sandbox
+// page) and compared for consistency before deciding whether a parser built entirely
+// out of our own regex, reading Haiku's raw text directly, can replace EXTRACTION_SCHEMA
+// above. Deliberately kept as a separate function/route rather than merged into
+// handleOcr, so nothing about the existing /api/ocr path is touched by this addition.
+const RAW_TRANSCRIPTION_PROMPT = `Transcribe every piece of text visible in this photo, exactly as printed. Output only the raw transcribed text, in the order you read it off the page — no commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;
+
+async function handleOcrRaw(request, env) {
+  if (!env.ANTHROPIC_API_KEY) {
+    return new Response(JSON.stringify({ error: "Server is not configured with an API key." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const contentType = request.headers.get("content-type") || "";
+  if (!contentType.startsWith("image/")) {
+    return new Response(JSON.stringify({ error: "Expected an image upload (Content-Type: image/*)." }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const imageBuffer = await request.arrayBuffer();
+  const base64Image = base64FromArrayBuffer(imageBuffer);
+
+  const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5",
+      max_tokens: 8192,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: contentType, data: base64Image } },
+            { type: "text", text: RAW_TRANSCRIPTION_PROMPT },
+          ],
+        },
+      ],
+      // No output_config here — unlike handleOcr, this endpoint deliberately leaves
+      // Haiku's response unconstrained so its natural reading order isn't shaped by a
+      // schema at all.
+    }),
+  });
+
+  if (!anthropicResponse.ok) {
+    const errorBody = await anthropicResponse.text();
+    return new Response(JSON.stringify({ error: "Claude API request failed", detail: errorBody }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const result = await anthropicResponse.json();
+  const textBlock = result.content?.find((block) => block.type === "text");
+
+  if (!textBlock) {
+    return new Response(JSON.stringify({ error: "No text content in Claude's response", raw: result }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  return new Response(textBlock.text, {
+    status: 200,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
     // This script is the entry point for the whole site's Worker, not just this
-    // feature — everything except /api/ocr falls through automatically to static
-    // asset serving (configured in wrangler.toml), so no other routing belongs here.
+    // feature — everything except /api/ocr and /api/ocr-raw falls through
+    // automatically to static asset serving (configured in wrangler.toml), so no
+    // other routing belongs here.
     if (url.pathname === "/api/ocr" && request.method === "POST") {
       return handleOcr(request, env);
+    }
+
+    if (url.pathname === "/api/ocr-raw" && request.method === "POST") {
+      return handleOcrRaw(request, env);
     }
 
     return new Response("Not found", { status: 404 });
