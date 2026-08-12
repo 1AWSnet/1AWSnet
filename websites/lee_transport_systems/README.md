@@ -1,14 +1,11 @@
----
-name: verify
-description: How to build/launch/drive lee_transport_systems locally for runtime verification.
----
-
-# lee_transport_systems verify recipe
+# lee_transport_systems
 
 Static site + one Cloudflare Worker (`wrangler.toml`, `main` points at
 `load_rates/loads_calculator/haiku/worker.js`), served via `[assets] directory = "."`.
 
-## Static pages only (no worker route involved)
+## Running locally
+
+### Static pages only (no worker route involved)
 
 No dependencies needed:
 
@@ -18,7 +15,7 @@ python -m http.server 8934 &
 curl -s http://localhost:8934/            # walk links with curl
 ```
 
-## Worker route involved (e.g. anything touching /api/ocr or wrangler.toml)
+### Worker route involved (e.g. anything touching /api/ocr or wrangler.toml)
 
 Node isn't installed by default on this machine — check first:
 
@@ -51,8 +48,8 @@ reload messages. Fix:
 npx --yes wrangler@latest dev --port 8936 --local --persist-to "$env:TEMP\wrangler-persist"
 ```
 
-Run in background (`run_in_background: true`), wait for `[wrangler:info] Ready on ...`
-in the output file before curling it.
+Run in background, wait for `[wrangler:info] Ready on ...` in the output file
+before curling it.
 
 No `ANTHROPIC_API_KEY` is set locally, so `POST /api/ocr` always short-circuits to
 `500 {"error":"Server is not configured with an API key."}` before reaching Anthropic
@@ -62,7 +59,7 @@ loaded and the guard fires, not that OCR itself works. Confirms:
 - static assets still served correctly alongside the worker
 - routing: `POST /api/ocr` handled, everything else 404s or falls through to assets
 
-## Cleanup (always, after using wrangler dev)
+### Cleanup (always, after using wrangler dev)
 
 ```bash
 tasklist //FI "IMAGENAME eq node.exe"     # find PIDs
