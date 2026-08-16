@@ -12,7 +12,7 @@
   --red-strong: #dc2626;
   --sky: #38bdf8;
 }
-body.light {
+:root.light {
   --bg: #ffffff;
   --bg-alt: #f1f5f9;
   --text: #0f172a;
@@ -55,6 +55,52 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
   font-size: 1rem;
 }
 .site-header .home-link:hover { color: var(--red-strong); }
+
+.site-header .menu { position: relative; }
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 36px;
+  height: 32px;
+  padding: 0;
+}
+.hamburger-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+}
+.menu-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 50;
+}
+.menu-dropdown.open { display: block; }
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.menu-item:hover { background: var(--border); }
 
 .page {
   max-width: 900px;
@@ -121,7 +167,7 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 .links a:hover { background: var(--border); border-color: var(--sky); }
 
 /* Buttons */
-button, .toggle-btn, .tab-btn {
+button, .tab-btn {
   font-family: inherit;
   padding: 6px 12px;
   font-size: 13px;
@@ -131,7 +177,9 @@ button, .toggle-btn, .tab-btn {
   color: var(--text);
   cursor: pointer;
 }
-.toggle-btn:hover, .tab-btn:hover { border-color: var(--sky); }
+.tab-btn:hover { border-color: var(--sky); }
+.hamburger-btn { border: 1px solid var(--input-border); background: var(--input-bg); cursor: pointer; border-radius: 6px; }
+.hamburger-btn:hover { border-color: var(--sky); }
 .tab-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
 
 .tabs { display: flex; justify-content: center; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
