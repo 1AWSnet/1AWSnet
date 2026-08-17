@@ -48,6 +48,7 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
   gap: 12px;
   flex-wrap: wrap;
 }
+.site-header .left-group { display: flex; align-items: center; gap: 10px; }
 .site-header .home-link {
   color: var(--red);
   font-weight: 700;
@@ -55,6 +56,23 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
   font-size: 1rem;
 }
 .site-header .home-link:hover { color: var(--red-strong); }
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.back-btn:hover { border-color: var(--sky); }
 
 .site-header .menu { position: relative; }
 .hamburger-btn {
@@ -151,9 +169,9 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 .links {
   margin-top: 24px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 .links a {
   padding: 8px 16px;
@@ -207,7 +225,7 @@ th { background: var(--bg-alt); }
 tr:nth-child(even) td { background: var(--bg-alt); }
 .count { font-size: 13px; color: var(--text-muted); margin: 6px 0; }
 
-/* OCR test harness (loads_calculator/haiku) */
+/* OCR test harness (loads_calculator/haiku_frame, loads_calculator/haiku_regex) */
 #status { margin: 1rem 0; font-weight: bold; }
 pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; text-align: left; border-radius: 6px; }
 #tripsTable { display: none; }

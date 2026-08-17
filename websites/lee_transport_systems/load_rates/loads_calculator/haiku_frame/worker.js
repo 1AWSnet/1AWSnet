@@ -162,7 +162,7 @@ async function handleOcr(request, env) {
 // use extra spacing to recreate the page's visual layout — some photos were coming
 // back with wide gaps simulating column position instead of plain running text, which
 // isn't useful for a parser that's going to work off the text stream itself. Exists so
-// that reading order can be collected across many real photos (via the haiku_raw_ocr
+// that reading order can be collected across many real photos (via the haiku_regex
 // sandbox page) and compared for consistency before deciding whether a parser built
 // entirely out of our own regex, reading Haiku's raw text directly, can replace
 // EXTRACTION_SCHEMA above. Deliberately kept as a separate function/route rather than

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Raw OCR sandbox — Loads Calculator</title>
+<title>Loads Calculator — Haiku Regex</title>
 <link rel="stylesheet" href="../../../css/style.css">
 <script src="../../../js/theme.js"></script>
 <script src="../../../js/header.js"></script>
@@ -13,7 +13,7 @@
 <script>renderSiteHeader('../../../');</script>
 
 <div class="page">
-<h1>Raw OCR sandbox</h1>
+<h1>Loads Calculator — Haiku Regex</h1>
 <p class="sub">Real-world test of the raw-text + regex parsing approach. Haiku transcribes with no schema; everything else (trip pairing, tariff lookup) runs through the same structureOcrResult() the working tool uses.</p>
 
 <div class="controls">
@@ -39,8 +39,8 @@
 </div>
 
 <script src="../../settlement_tariff/js/data.js"></script>
-<script src="../haiku/terminals.js"></script>
-<script src="../haiku/structure.js"></script>
+<script src="../haiku_frame/terminals.js"></script>
+<script src="../haiku_frame/structure.js"></script>
 <script src="parse-raw-text.js"></script>
 <script>
 const fileInput = document.getElementById('photo');
@@ -88,7 +88,7 @@ function makeRateCell(trip) {
   return td;
 }
 
-// structureOcrResult() (reused as-is from ../haiku/structure.js) flags a trip number
+// structureOcrResult() (reused as-is from ../haiku_frame/structure.js) flags a trip number
 // that came up short an LLD or LUL row with its MISSING_ROW placeholder, whose name is
 // literally "(missing)". Swap that for a clearer flag here at render time only — no
 // change to the shared, working structure.js needed for that.
