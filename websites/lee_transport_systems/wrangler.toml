@@ -1,10 +1,11 @@
-# Deploys the whole lee_transport_systems site as one Cloudflare Worker,
+# Deploys the whole Lee Transport Systems site as one Cloudflare Worker,
 # since the Haiku OCR feature requires server-side code.
 # If the site doesn't require server-side code then this wrangler.toml file is not required.
 name = "lee-transport-systems"
-main = "worker.js"
+main = "load_rates/load_calculators/haiku_frame/worker.js"
 compatibility_date = "2026-08-05"
 
 # serves index.html, css/, js/, everything else as static files
 [assets]
-directory = ".."
+directory = "."
+ 

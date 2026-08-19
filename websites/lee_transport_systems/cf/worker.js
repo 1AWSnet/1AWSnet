@@ -1,4 +1,4 @@
-// Worker entry point for the whole lee-transport-systems site (see ../../wrangler.toml).
+// Worker entry point for the whole lee-transport-systems site (see ./wrangler.toml).
 // Handles POST /api/ocr; every other request falls through automatically to the
 // static assets configured in wrangler.toml — this script never needs to serve them.
 //
