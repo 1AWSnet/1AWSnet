@@ -36,6 +36,11 @@
   <pre id="result"></pre>
 </details>
 
+<details id="previewDetails" style="display: none;">
+  <summary>What was actually sent to Claude</summary>
+  <img id="normalizedPreview" style="max-width: 100%;">
+</details>
+
 </div>
 
 <script src="../../settlement_tariff/js/data.js"></script>
@@ -47,6 +52,8 @@ const fileInput = document.getElementById('photo');
 const statusEl = document.getElementById('status');
 const resultEl = document.getElementById('result');
 const rawDetails = document.getElementById('rawDetails');
+const previewDetails = document.getElementById('previewDetails');
+const normalizedPreview = document.getElementById('normalizedPreview');
 const tripsTable = document.getElementById('tripsTable');
 const tripsBody = document.getElementById('tripsBody');
 const summaryEl = document.getElementById('summary');
@@ -160,6 +167,8 @@ document.getElementById('upload').addEventListener('click', async () => {
 
   try {
     const normalized = await normalizeOrientation(file);
+    normalizedPreview.src = URL.createObjectURL(normalized);
+    previewDetails.style.display = 'block';
     const response = await fetch('/api/ocr-raw', {
       method: 'POST',
       headers: { 'Content-Type': 'image/jpeg' },
