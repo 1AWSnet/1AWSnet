@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Load Calculators — Haiku Regex</title>
+<title>Haiku Regex</title>
 <link rel="stylesheet" href="../../../css/style.css">
 <script src="../../../js/theme.js"></script>
 <script src="../../../js/header.js"></script>
@@ -13,8 +13,7 @@
 <script>renderSiteHeader('../../../');</script>
 
 <div class="page">
-<h1>Load Calculators — Haiku Regex</h1>
-<p class="sub">Real-world test of the raw-text + regex parsing approach. Haiku transcribes with no schema; everything else (trip pairing, tariff lookup) runs through the same structureOcrResult() the working tool uses.</p>
+<h1>Haiku Regex</h1>
 
 <div class="controls">
 <input type="file" id="photo" accept="image/*">
@@ -155,7 +154,7 @@ async function normalizeOrientation(file) {
 document.getElementById('upload').addEventListener('click', async () => {
   const file = fileInput.files[0];
   if (!file) {
-    statusEl.textContent = 'Pick a photo first.';
+    statusEl.textContent = 'Photo has not been selected.';
     return;
   }
 
