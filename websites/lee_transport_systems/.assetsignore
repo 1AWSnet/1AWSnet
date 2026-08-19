@@ -1,1 +1,3 @@
+# Excludes cf/ (wrangler.toml, worker.js) from being uploaded as public
+# static assets, since [assets] directory in the wrangler.toml file now covers the whole site root.
 cf/
