@@ -1,3 +1,2 @@
-# Excludes files in cf/ (wrangler.toml, worker.js)
-# from being uploaded to Cloudflare servers.
+# Excludes files in cf/ from being served as static files.
 cf/
