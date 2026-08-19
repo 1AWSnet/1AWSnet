@@ -1,4 +1,4 @@
-// Turns the raw OCR JSON from /api/ocr (cf/haiku_frame.js's EXTRACTION_SCHEMA) into trip
+// Turns the raw OCR JSON from /api/ocr-frame (cf/haiku_frame.js's EXTRACTION_SCHEMA) into trip
 // records with a matched settlement-tariff rate. Runs entirely in the browser — no
 // extra Haiku call per photo — so the extraction schema stays a plain per-row
 // transcription of what's printed on the page, and all business logic (pairing LLD/LUL

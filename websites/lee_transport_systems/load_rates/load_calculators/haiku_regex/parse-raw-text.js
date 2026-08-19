@@ -1,4 +1,4 @@
-// Converts Haiku's raw, unstructured OCR text (from /api/ocr-raw) into the same
+// Converts Haiku's raw, unstructured OCR text (from /api/ocr-regex) into the same
 // {date, driverName, rows: [...]} shape worker.js's EXTRACTION_SCHEMA produces, so it
 // can be fed straight into the existing, unmodified structureOcrResult() from
 // ../haiku_frame/structure.js -- all the trip pairing / city-state parsing / tariff lookup /
