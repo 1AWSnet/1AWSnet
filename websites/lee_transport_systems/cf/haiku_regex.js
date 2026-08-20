@@ -1,9 +1,9 @@
 import { base64FromArrayBuffer } from "./base64.js";
 
-// Diagnostic-only prompt (not used by any live page) — plain transcription with no
-// schema, to study Haiku's natural reading order across real photos via the haiku_regex
-// sandbox before deciding if a regex-only parser can replace EXTRACTION_SCHEMA in
-// haiku_frame.js. Separate route on purpose, so /api/ocr-frame itself is untouched.
+// Plain transcription with no schema, to study Haiku's natural reading order across
+// real photos via the haiku_regex sandbox before deciding if a regex-only parser can
+// replace EXTRACTION_SCHEMA in haiku_frame.js. Separate route on purpose, so
+// /api/ocr-frame itself is untouched.
 const RAW_TRANSCRIPTION_PROMPT = `Transcribe every piece of text visible in this photo, exactly as printed. If the photo itself is rotated or sideways, read the text as if it were upright — describe what the text says, not how the photo is oriented.
 
 Output only the raw transcribed text, in the order you read it off the page, as plain running text. Do not add extra spaces, indentation, or blank lines to represent where words are positioned on the page — use only normal single spaces and line breaks, the same as you would to write out what the page says as continuous text. No commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;

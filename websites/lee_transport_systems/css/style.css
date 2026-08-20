@@ -225,7 +225,7 @@ th { background: var(--bg-alt); }
 tr:nth-child(even) td { background: var(--bg-alt); }
 .count { font-size: 13px; color: var(--text-muted); margin: 6px 0; }
 
-/* OCR test harness (load_calculators/haiku_frame, load_calculators/haiku_regex) */
+/* OCR test harness (load_calculators/haiku/haiku_frame, load_calculators/haiku/haiku_regex) */
 #status { margin: 1rem 0; font-weight: bold; }
 pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; text-align: left; border-radius: 6px; }
 #tripsTable { display: none; }
