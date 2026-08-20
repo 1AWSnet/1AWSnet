@@ -17,25 +17,24 @@ const TERMINALS = [
   // 100 Waterfront St., New Haven, CT
   { address: '100 Waterfront', lines: ['Call Dispatch', 'New Haven'] },
 
-  // 109 DIVIDEND ROAD, Rocky Hill, CT
-  { address: '109 Dividend', lines: ['CITGO', 'Rocky Hill'] },
+  // 134 FORBES AVENUE, New Haven, CT
+  { address: 'Forbes Avenue', lines: ['Buckeye', 'Forbes', 'New Haven'] },
 
-  // 250 Eagles Nest Road, Bridgeport, CT
-  { address: '250 Eagles', lines: ['Sprague', 'Bridgeport'] },
-
-  // 481 East Shore Parkway, New Haven, CT
-  { address: '481 East', lines: ['Shell/Motiva', 'New Haven'] },
-
-  // 500 Waterfront Street, New Haven, CT
-  { address: '500 Waterfront', lines: ['Global', 'New Haven'] },
-
-  // 280 Waterfront Street, New Haven, CT
+  // 280 WATERFRONT STREET, New Haven, CT
   { address: ['280 Waterfront', '200 Waterfront'], lines: ['Buckeye', 'Waterfront', 'New Haven'] },
   // 200 = OCR misread of 280
 
-  // 134 Forbes Avenue, New Haven, CT
-  { address: ['134 Forbes', '334 Forbes', '934 Forbes'], lines: ['Buckeye', 'Forbes', 'New Haven'] },
-  // 334 & 934 = OCR misread of 134
+  // 500 WATERFRONT STREET, New Haven, CT
+  { address: '500 Waterfront', lines: ['Global', 'New Haven'] },
+
+  // 481 EAST SHORE PARKWAY, New Haven, CT
+  { address: 'East Shore', lines: ['Shell/Motiva', 'New Haven'] },
+
+  // 250 EAGLES NEST ROAD, Bridgeport, CT
+  { address: 'Eagles Nest', lines: ['Sprague', 'Bridgeport'] },
+
+  // 109 DIVIDEND ROAD, Rocky Hill, CT
+  { address: 'Dividend Road', lines: ['CITGO', 'Rocky Hill'] },
 ];
 
 function normalizeAddress(address) {
