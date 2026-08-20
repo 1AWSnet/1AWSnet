@@ -34,8 +34,8 @@ const TERMINALS = [
   // 200 = OCR misread of 280
 
   // 134 Forbes Avenue, New Haven, CT
-  { address: ['134 Forbes', '334 Forbes'], lines: ['Buckeye', 'Forbes', 'New Haven'] },
-  // 334 = OCR misread of 134
+  { address: ['134 Forbes', '334 Forbes', '934 Forbes'], lines: ['Buckeye', 'Forbes', 'New Haven'] },
+  // 334 & 934 = OCR misread of 134
 ];
 
 function normalizeAddress(address) {
