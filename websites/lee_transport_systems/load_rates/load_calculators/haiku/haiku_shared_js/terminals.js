@@ -6,6 +6,7 @@
 // showing the raw OCR'd name + address. Add more entries here as they're learned.
 const TERMINALS = [
   { address: '100 Waterfront St., New Haven, CT', lines: ['Call Dispatch', 'New Haven'] },
+  { address: '109 DIVIDEND ROAD, Rocky Hill, CT', lines: ['CITGO', 'Rocky Hill', 'Rocky Hill'] },
   { address: '250 Eagles Nest Road, Bridgeport, CT', lines: ['Sprague', 'Bridgeport'] },
   { address: '481 East Shore Parkway, New Haven, CT', lines: ['Shell/Motiva', 'New Haven'] },
   { address: '500 Waterfront Street, New Haven, CT', lines: ['Global', 'New Haven'] },
