@@ -14,27 +14,28 @@
 // digit it sometimes gets wrong), so each known misread is its own array item instead
 // of a separate TERMINALS entry.
 const TERMINALS = [
-  // { address: '100 Waterfront St., New Haven, CT', lines: ['Call Dispatch', 'New Haven'] },
+  // 100 Waterfront St., New Haven, CT
   { address: '100 Waterfront', lines: ['Call Dispatch', 'New Haven'] },
 
-  // { address: '109 DIVIDEND ROAD, Rocky Hill, CT', lines: ['CITGO', 'Rocky Hill'] },
+  // 109 DIVIDEND ROAD, Rocky Hill, CT
   { address: '109 Dividend', lines: ['CITGO', 'Rocky Hill'] },
 
-  // { address: '250 Eagles Nest Road, Bridgeport, CT', lines: ['Sprague', 'Bridgeport'] },
+  // 250 Eagles Nest Road, Bridgeport, CT
   { address: '250 Eagles', lines: ['Sprague', 'Bridgeport'] },
 
-  // { address: '481 East Shore Parkway, New Haven, CT', lines: ['Shell/Motiva', 'New Haven'] },
+  // 481 East Shore Parkway, New Haven, CT
   { address: '481 East', lines: ['Shell/Motiva', 'New Haven'] },
 
-  // { address: '500 Waterfront Street, New Haven, CT', lines: ['Global', 'New Haven'] },
+  // 500 Waterfront Street, New Haven, CT
   { address: '500 Waterfront', lines: ['Global', 'New Haven'] },
 
-  // { address: '280 Waterfront Street, New Haven, CT', lines: ['Buckeye', 'Waterfront', 'New Haven'] },
+  // 280 Waterfront Street, New Haven, CT
   { address: ['280 Waterfront', '200 Waterfront'], lines: ['Buckeye', 'Waterfront', 'New Haven'] },
   // 200 = OCR misread of 280
 
-  // { address: '134 Forbes Avenue, New Haven, CT', lines: ['Buckeye', 'Forbes', 'New Haven'] },
-  { address: '134 Forbes', lines: ['Buckeye', 'Forbes', 'New Haven'] },
+  // 134 Forbes Avenue, New Haven, CT
+  { address: ['134 Forbes', '334 Forbes'], lines: ['Buckeye', 'Forbes', 'New Haven'] },
+  // 334 = OCR misread of 134
 ];
 
 function normalizeAddress(address) {
