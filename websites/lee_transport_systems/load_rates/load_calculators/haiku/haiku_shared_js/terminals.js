@@ -8,21 +8,33 @@
 // sold/renamed -- to the short label drivers recognize. Addresses not listed here
 // just fall back to showing the raw OCR'd name + address. Add more entries here as
 // they're learned; keep fragments distinctive enough not to collide.
+//
+// `address` can be a single fragment or an array of fragments -- add an array entry
+// when Haiku's OCR misreads a given terminal's address more than one way (e.g. a
+// digit it sometimes gets wrong), so each known misread is its own array item instead
+// of a separate TERMINALS entry.
 const TERMINALS = [
   // { address: '100 Waterfront St., New Haven, CT', lines: ['Call Dispatch', 'New Haven'] },
-  // { address: '109 DIVIDEND ROAD, Rocky Hill, CT', lines: ['CITGO', 'Rocky Hill'] },
-  // { address: '250 Eagles Nest Road, Bridgeport, CT', lines: ['Sprague', 'Bridgeport'] },
-  // { address: '481 East Shore Parkway, New Haven, CT', lines: ['Shell/Motiva', 'New Haven'] },
-  // { address: '500 Waterfront Street, New Haven, CT', lines: ['Global', 'New Haven'] },
-  // { address: '280 Waterfront Street, New Haven, CT', lines: ['Buckeye', 'Waterfront', 'New Haven'] },
-  // { address: '134 Forbes Avenue, New Haven, CT', lines: ['Buckeye', 'Forbes', 'New Haven'] },
   { address: '100 Waterfront', lines: ['Call Dispatch', 'New Haven'] },
-  { address: 'DIVIDEND', lines: ['CITGO', 'Rocky Hill'] },
-  { address: 'Eagles', lines: ['Sprague', 'Bridgeport'] },
-  { address: 'Shore', lines: ['Shell/Motiva', 'New Haven'] },
+
+  // { address: '109 DIVIDEND ROAD, Rocky Hill, CT', lines: ['CITGO', 'Rocky Hill'] },
+  { address: '109 Dividend', lines: ['CITGO', 'Rocky Hill'] },
+
+  // { address: '250 Eagles Nest Road, Bridgeport, CT', lines: ['Sprague', 'Bridgeport'] },
+  { address: '250 Eagles', lines: ['Sprague', 'Bridgeport'] },
+
+  // { address: '481 East Shore Parkway, New Haven, CT', lines: ['Shell/Motiva', 'New Haven'] },
+  { address: '481 East', lines: ['Shell/Motiva', 'New Haven'] },
+
+  // { address: '500 Waterfront Street, New Haven, CT', lines: ['Global', 'New Haven'] },
   { address: '500 Waterfront', lines: ['Global', 'New Haven'] },
-  { address: '280 Waterfront', lines: ['Buckeye', 'Waterfront', 'New Haven'] },
-  { address: 'Forbes', lines: ['Buckeye', 'Forbes', 'New Haven'] },
+
+  // { address: '280 Waterfront Street, New Haven, CT', lines: ['Buckeye', 'Waterfront', 'New Haven'] },
+  { address: ['280 Waterfront', '200 Waterfront'], lines: ['Buckeye', 'Waterfront', 'New Haven'] },
+  // 200 = OCR misread of 280
+
+  // { address: '134 Forbes Avenue, New Haven, CT', lines: ['Buckeye', 'Forbes', 'New Haven'] },
+  { address: '134 Forbes', lines: ['Buckeye', 'Forbes', 'New Haven'] },
 ];
 
 function normalizeAddress(address) {
@@ -35,6 +47,9 @@ function normalizeAddress(address) {
 
 function findTerminal(address) {
   const normalized = normalizeAddress(address);
-  const match = TERMINALS.find((t) => normalized.includes(normalizeAddress(t.address)));
+  const match = TERMINALS.find((t) => {
+    const fragments = Array.isArray(t.address) ? t.address : [t.address];
+    return fragments.some((fragment) => normalized.includes(normalizeAddress(fragment)));
+  });
   return match ? match.lines : null;
 }
