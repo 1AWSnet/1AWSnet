@@ -11,12 +11,23 @@
 
 const TARIFFS = [CT_TARIFF, NE_TARIFF];
 
+// Corrects known OCR misreads of a city name before tariff lookup/display, so a
+// single misread letter doesn't silently turn into "no tariff match" -- same idea as
+// TERMINALS' address misread arrays in terminals.js, but keyed on city name since
+// that's what feeds findTariffRate. Keyed lowercase; value is the corrected,
+// properly-cased name shown on screen. Add more entries here as they're found.
+const CITY_MISREADS = {
+  bradford: 'Branford', // OCR misread of Branford (drops the "n")
+};
+
 // LLD/LUL addresses are always printed as "Street, City, ST" — the tariff only keys
 // on city + state, so this keeps just the last two comma-separated segments.
 function parseCityState(address) {
   const parts = address.split(',').map((s) => s.trim()).filter(Boolean);
   if (parts.length < 2) return null;
-  return { city: parts[parts.length - 2], state: parts[parts.length - 1] };
+  const rawCity = parts[parts.length - 2];
+  const city = CITY_MISREADS[rawCity.toLowerCase()] || rawCity;
+  return { city, state: parts[parts.length - 1] };
 }
 
 function cityStateKey(cityState) {
