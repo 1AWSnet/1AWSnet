@@ -42,7 +42,15 @@ function parseRawTextToRows(rawText) {
     const chunk = rawText.slice(start, end);
 
     // Rejects OCR noise that reads like "Trip: N" but has no real trip data after it.
-    const orderMatch = chunk.match(/Order\s*#?:\s*(\d+)/);
+    // Some scans place the first trip's "Order #" on the column-header line, before
+    // the "Trip: 1" marker itself, rather than after it -- fall back to the text
+    // since the previous trip marker (or start of document) to still catch it.
+    const orderRe = /Order\s*#?:?\s*(\d+)/;
+    let orderMatch = chunk.match(orderRe);
+    if (!orderMatch) {
+      const prevEnd = i === 0 ? 0 : matches[i - 1].index + matches[i - 1][0].length;
+      orderMatch = rawText.slice(prevEnd, match.index).match(orderRe);
+    }
     if (!orderMatch) continue;
 
     const lines = chunk.split('\n');
