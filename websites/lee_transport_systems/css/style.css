@@ -143,6 +143,22 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 .page ul a:hover { border-color: var(--sky); color: var(--sky); }
 .wip { color: var(--text-muted); font-size: 0.85rem; }
 
+/* Vertically centers .page content below the header -- opt-in via body.centered-page
+   so short nav-menu pages (Load Rates, Load Calculators) can match the hero's 4-way
+   centering, while long-content pages (tables, OCR tools) keep their normal top-down
+   layout. */
+body.centered-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body.centered-page .page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* Landing hero (root index.html) */
 .hero {
   min-height: 100vh;
