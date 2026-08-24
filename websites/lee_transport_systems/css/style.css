@@ -40,6 +40,7 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 /* Top bar shown on every page except the landing hero */
 .site-header {
   max-width: 900px;
+  width: fit-content;
   margin: 0 auto;
   padding: 16px;
   display: flex;
@@ -73,7 +74,6 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
   cursor: pointer;
 }
 .back-btn:hover { border-color: var(--sky); }
-.back-btn-hidden { visibility: hidden; }
 
 .site-header .menu { position: relative; }
 .hamburger-btn {
@@ -162,13 +162,13 @@ body.centered-page .page {
 
 /* Landing hero (root index.html) */
 .hero {
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 20px;
 }
+body.centered-page .hero { flex: 1; }
 .hero .container { max-width: 500px; }
 .hero h1 { font-size: 2rem; margin-bottom: 12px; }
 .hero p { font-size: 1.1rem; color: var(--text-muted); line-height: 1.6; }
@@ -213,7 +213,6 @@ button, .tab-btn {
   cursor: pointer;
 }
 .tab-btn:hover { border-color: var(--sky); }
-.hamburger-btn { border: 1px solid var(--input-border); background: var(--input-bg); cursor: pointer; border-radius: 6px; }
 .hamburger-btn:hover { border-color: var(--sky); }
 .tab-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
 
@@ -237,6 +236,8 @@ input[type="text"] { width: 160px; }
 /* Tables */
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; margin: 10px auto; background: var(--bg); width: 100%; }
+.tight-table { width: fit-content; }
+.tight-table th, .tight-table td { padding: 6px 24px; }
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: center; font-size: 14px; color: var(--text); background: var(--bg); white-space: nowrap; }
 th { background: var(--bg-alt); }
 tr:nth-child(even) td { background: var(--bg-alt); }
