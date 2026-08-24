@@ -1,55 +1,59 @@
 // Curated display names for known pickup (LLD) terminals, keyed by a distinctive
-// fragment of the address printed under the LLD row (street name, or house number +
-// street for the Waterfront entries where the street name alone is shared by several
-// terminals). A fragment, not the full address, because exact-matching the whole
-// OCR'd address string was missing real matches. The printed terminal name is not
-// always what drivers actually call the place (ownership changes, e.g. Magellan ->
-// Buckeye), so this maps the address -- which doesn't change when a facility is
-// sold/renamed -- to the short label drivers recognize. Addresses not listed here
-// just fall back to showing the raw OCR'd name + address. Add more entries here as
-// they're learned; keep fragments distinctive enough not to collide.
+// fragment of the NAME printed on the LLD row -- not the address. A misread digit in
+// an address can coincidentally equal a different, unrelated terminal's real address
+// (e.g. a misread "280 Waterfront" landing exactly on "500 Waterfront"), which is
+// silently wrong with no way to detect it from the address text alone. A misread
+// company name is far less likely to collide with a different terminal's real name.
 //
-// `address` can be a single fragment or an array of fragments -- add an array entry
-// when Haiku's OCR misreads a given terminal's address more than one way (e.g. a
-// digit it sometimes gets wrong), so each known misread is its own array item instead
-// of a separate TERMINALS entry.
+// The printed name is often an old/legal name that predates a sale or rebrand (e.g.
+// Magellan -> Buckeye) -- when that happens, update the `name` fragment below to
+// whatever the paper now prints. Ownership changes are rare and the paper reads the
+// same for every driver/photo, so this only needs updating once per change, not
+// per misread. Addresses not listed here just fall back to showing the raw OCR'd
+// name + address. Add more entries here as they're learned; keep fragments
+// distinctive enough not to collide with each other (e.g. the two Magellan-owned
+// terminals below are kept apart by including the location in the fragment, not
+// just "Magellan").
+//
+// `name` can be a single fragment or an array of fragments -- add an array entry
+// when Haiku's OCR misreads a given terminal's printed name more than one way, so
+// each known misread is its own array item instead of a separate TERMINALS entry.
 const TERMINALS = [
   // 100 Waterfront St., New Haven, CT
-  { address: '100 Waterfront', lines: ['Call Dispatch', 'New Haven'] },
+  { name: 'CALL DISPATCH', lines: ['Call Dispatch', 'New Haven'] },
 
-  // 134 FORBES AVENUE, New Haven, CT
-  { address: 'Forbes Avenue', lines: ['Buckeye', 'Forbes', 'New Haven'] },
+  // 134 Forbes Avenue, New Haven, CT
+  { name: 'MAGELLAN FORBES', lines: ['Buckeye', 'Forbes', 'New Haven'] },
 
-  // 280 WATERFRONT STREET, New Haven, CT
-  { address: ['280 Waterfront', '820 Waterfront', '200 Waterfront'], lines: ['Buckeye', 'Waterfront', 'New Haven'] },
-  // Additional addresses besides '280 Waterfront' are there to compensate for OCR misreads.
+  // 280 Waterfront Street, New Haven, CT
+  { name: 'MAGELLAN NEW HAVEN', lines: ['Buckeye', 'Waterfront', 'New Haven'] },
 
-  // 500 WATERFRONT STREET, New Haven, CT
-  { address: '500 Waterfront', lines: ['Global', 'New Haven'] },
+  // 500 Waterfront Street, New Haven, CT
+  { name: 'GLOBAL NEW HAVEN', lines: ['Global', 'New Haven'] },
 
-  // 481 EAST SHORE PARKWAY, New Haven, CT
-  { address: 'East Shore', lines: ['Shell/Motiva', 'New Haven'] },
+  // 481 East Shore Parkway, New Haven, CT
+  { name: 'MOTIVA NEW HAVEN', lines: ['Shell/Motiva', 'New Haven'] },
 
-  // 250 EAGLES NEST ROAD, Bridgeport, CT
-  { address: 'Eagles Nest', lines: ['Sprague', 'Bridgeport'] },
+  // 250 Eagles Nest Road, Bridgeport, CT
+  { name: 'SPRAGUE BRIDGEPORT', lines: ['Sprague', 'Bridgeport'] },
 
-  // 109 DIVIDEND ROAD, Rocky Hill, CT
-  { address: 'Dividend Road', lines: ['CITGO', 'Rocky Hill'] },
+  // 109 Dividend Road, Rocky Hill, CT
+  { name: 'CITGO ROCKY HILL', lines: ['CITGO', 'Rocky Hill'] },
 ];
 
-function normalizeAddress(address) {
-  return address
+function normalizeText(text) {
+  return text
     .toLowerCase()
     .replace(/[.,]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-function findTerminal(address) {
-  const normalized = normalizeAddress(address);
+function findTerminal(name) {
+  const normalized = normalizeText(name);
   const match = TERMINALS.find((t) => {
-    const fragments = Array.isArray(t.address) ? t.address : [t.address];
-    return fragments.some((fragment) => normalized.includes(normalizeAddress(fragment)));
+    const fragments = Array.isArray(t.name) ? t.name : [t.name];
+    return fragments.some((fragment) => normalized.includes(normalizeText(fragment)));
   });
   return match ? match.lines : null;
 }

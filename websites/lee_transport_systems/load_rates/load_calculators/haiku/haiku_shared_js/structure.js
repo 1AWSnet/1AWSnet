@@ -13,7 +13,7 @@ const TARIFFS = [CT_TARIFF, NE_TARIFF];
 
 // Corrects known OCR misreads of a city name before tariff lookup/display, so a
 // single misread letter doesn't silently turn into "no tariff match" -- same idea as
-// TERMINALS' address misread arrays in terminals.js, but keyed on city name since
+// TERMINALS' name misread arrays in terminals.js, but keyed on city name since
 // that's what feeds findTariffRate. Keyed lowercase; value is the corrected,
 // properly-cased name shown on screen. Add more entries here as they're found.
 const CITY_MISREADS = {
@@ -98,7 +98,7 @@ function structureOcrResult(ocrResult) {
         name: lld.name,
         address: lld.address,
         ...origin,
-        terminalLines: findTerminal(lld.address),
+        terminalLines: findTerminal(lld.name),
       },
       destination: { name: lul.name, address: lul.address, ...destination },
       rate,
