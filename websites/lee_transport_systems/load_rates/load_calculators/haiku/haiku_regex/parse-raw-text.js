@@ -61,9 +61,12 @@ function parseRawTextToRows(rawText) {
 
     const lines = chunk.split('\n');
     for (let li = 0; li < lines.length; li++) {
-      const tagMatch = lines[li].match(/(?:^|\s)(LLD|LUL)\s*(.*)$/);
+      // "LD" tolerates a known misread that drops one of the two L's from "LLD" --
+      // normalized back to "LLD" below so nothing downstream needs to know about it. No
+      // equivalent misread of "LUL" has been seen.
+      const tagMatch = lines[li].match(/(?:^|\s)(LLD|LD|LUL)\s*(.*)$/);
       if (!tagMatch) continue;
-      const rowType = tagMatch[1];
+      const rowType = tagMatch[1] === 'LD' ? 'LLD' : tagMatch[1];
       let restOfLine = tagMatch[2].trim();
 
       let nameLineIdx = li;

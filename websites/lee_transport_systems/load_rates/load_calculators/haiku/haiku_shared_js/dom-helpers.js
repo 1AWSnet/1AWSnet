@@ -1,5 +1,22 @@
 // DOM-building helpers shared by haiku_frame/index.html and haiku_regex/index.html.
 
+// Looks up the element IDs both pages' markup has in common -- same IDs, same
+// structure, in both files. Called once at the top of each page's script.
+function getOcrPageElements() {
+  return {
+    fileInput: document.getElementById('photo'),
+    fileNameEl: document.getElementById('fileName'),
+    statusEl: document.getElementById('status'),
+    resultEl: document.getElementById('result'),
+    rawDetails: document.getElementById('rawDetails'),
+    previewDetails: document.getElementById('previewDetails'),
+    normalizedPreview: document.getElementById('normalizedPreview'),
+    tripsTable: document.getElementById('tripsTable'),
+    tripsBody: document.getElementById('tripsBody'),
+    summaryEl: document.getElementById('summary'),
+  };
+}
+
 function makeCell(text, className) {
   const td = document.createElement('td');
   if (className) td.className = className;
@@ -69,10 +86,24 @@ function wireFileInput(fileInput, fileNameEl, statusEl) {
   });
 }
 
+// Copies sourceEl's current text to the clipboard on click, with brief "Copied"
+// feedback. button sits inside a <summary> on both pages that use this, so the click
+// is stopped from also toggling the enclosing <details>.
+function wireCopyButton(button, sourceEl) {
+  button.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(sourceEl.textContent);
+    const original = button.textContent;
+    button.textContent = 'Copied';
+    setTimeout(() => { button.textContent = original; }, 1500);
+  });
+}
+
 let uploadCounterInterval = null;
 
-// Replaces statusEl's content with a live 1-20s counter while the OCR request is in
-// flight, so waiting feels less like the page is stuck. Caps at 20 rather than
+// Replaces statusEl's content with a live 1-35s counter while the OCR request is in
+// flight, so waiting feels less like the page is stuck. Caps at 35 rather than
 // counting forever, matching the "try again" message telling the driver to give up
 // and retry around then. Call stopUploadCounter() once the request settles (success,
 // non-OK response, or a thrown error) so the counter doesn't keep running and
@@ -86,12 +117,12 @@ function startUploadCounter(statusEl) {
   const counterLine = document.createElement('div');
   counterLine.className = 'upload-counter';
   const bottomLine = document.createElement('div');
-  bottomLine.textContent = 'Try again if the counter reaches 20 seconds.';
+  bottomLine.append('Try again if', document.createElement('br'), 'the counter reaches 35 seconds.');
   statusEl.append(topLine, counterLine, bottomLine);
 
   let seconds = 0;
   const tick = () => {
-    seconds = Math.min(seconds + 1, 20);
+    seconds = Math.min(seconds + 1, 35);
     counterLine.textContent = seconds;
   };
   tick();

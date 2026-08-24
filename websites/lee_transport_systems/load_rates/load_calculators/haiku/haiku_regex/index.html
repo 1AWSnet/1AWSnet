@@ -50,16 +50,10 @@
 <script src="../haiku_shared_js/dom-helpers.js"></script>
 <script src="parse-raw-text.js"></script>
 <script>
-const fileInput = document.getElementById('photo');
-const fileNameEl = document.getElementById('fileName');
-const statusEl = document.getElementById('status');
-const resultEl = document.getElementById('result');
-const rawDetails = document.getElementById('rawDetails');
-const previewDetails = document.getElementById('previewDetails');
-const normalizedPreview = document.getElementById('normalizedPreview');
-const tripsTable = document.getElementById('tripsTable');
-const tripsBody = document.getElementById('tripsBody');
-const summaryEl = document.getElementById('summary');
+const {
+  fileInput, fileNameEl, statusEl, resultEl, rawDetails, previewDetails,
+  normalizedPreview, tripsTable, tripsBody, summaryEl,
+} = getOcrPageElements();
 
 function makeRateCell(trip) {
   const td = document.createElement('td');
@@ -100,18 +94,7 @@ function renderTrips(structured) {
   summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
 }
 
-document.getElementById('copyRaw').addEventListener('click', (e) => {
-  // Stops the click from also toggling the <details> it sits inside, since the button
-  // is part of the <summary> row.
-  e.preventDefault();
-  e.stopPropagation();
-  navigator.clipboard.writeText(resultEl.textContent);
-  const btn = e.currentTarget;
-  const original = btn.textContent;
-  btn.textContent = 'Copied';
-  setTimeout(() => { btn.textContent = original; }, 1500);
-});
-
+wireCopyButton(document.getElementById('copyRaw'), resultEl);
 wireFileInput(fileInput, fileNameEl, statusEl);
 
 document.getElementById('upload').addEventListener('click', async () => {
