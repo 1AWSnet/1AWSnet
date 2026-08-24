@@ -20,25 +20,25 @@
 // each known misread is its own array item instead of a separate TERMINALS entry.
 const TERMINALS = [
   // 100 Waterfront St., New Haven, CT
-  { name: 'CALL DISPATCH', lines: ['Call Dispatch', 'New Haven'] },
+  { name: 'CALL DISPATCH', lines: ['Call Dispatch', 'New Haven'], city: 'New Haven', state: 'CT' },
 
   // 134 Forbes Avenue, New Haven, CT
-  { name: 'MAGELLAN FORBES', lines: ['Buckeye', 'Forbes', 'New Haven'] },
+  { name: 'MAGELLAN FORBES', lines: ['Buckeye', 'Forbes', 'New Haven'], city: 'New Haven', state: 'CT' },
 
   // 280 Waterfront Street, New Haven, CT
-  { name: 'MAGELLAN NEW HAVEN', lines: ['Buckeye', 'Waterfront', 'New Haven'] },
+  { name: 'MAGELLAN NEW HAVEN', lines: ['Buckeye', 'Waterfront', 'New Haven'], city: 'New Haven', state: 'CT' },
 
   // 500 Waterfront Street, New Haven, CT
-  { name: 'GLOBAL NEW HAVEN', lines: ['Global', 'New Haven'] },
+  { name: 'GLOBAL NEW HAVEN', lines: ['Global', 'New Haven'], city: 'New Haven', state: 'CT' },
 
   // 481 East Shore Parkway, New Haven, CT
-  { name: 'MOTIVA NEW HAVEN', lines: ['Shell/Motiva', 'New Haven'] },
+  { name: 'MOTIVA NEW HAVEN', lines: ['Shell/Motiva', 'New Haven'], city: 'New Haven', state: 'CT' },
 
   // 250 Eagles Nest Road, Bridgeport, CT
-  { name: 'SPRAGUE BRIDGEPORT', lines: ['Sprague', 'Bridgeport'] },
+  { name: 'SPRAGUE BRIDGEPORT', lines: ['Sprague', 'Bridgeport'], city: 'Bridgeport', state: 'CT' },
 
   // 109 Dividend Road, Rocky Hill, CT
-  { name: 'CITGO ROCKY HILL', lines: ['CITGO', 'Rocky Hill'] },
+  { name: 'CITGO ROCKY HILL', lines: ['CITGO', 'Rocky Hill'], city: 'Rocky Hill', state: 'CT' },
 ];
 
 function normalizeText(text) {
@@ -49,11 +49,25 @@ function normalizeText(text) {
     .trim();
 }
 
-function findTerminal(name) {
+function findTerminalEntry(name) {
   const normalized = normalizeText(name);
-  const match = TERMINALS.find((t) => {
+  return TERMINALS.find((t) => {
     const fragments = Array.isArray(t.name) ? t.name : [t.name];
     return fragments.some((fragment) => normalized.includes(normalizeText(fragment)));
-  });
-  return match ? match.lines : null;
+  }) || null;
+}
+
+function findTerminal(name) {
+  const entry = findTerminalEntry(name);
+  return entry ? entry.lines : null;
+}
+
+// City/state for a matched terminal, straight from the curated table above -- not
+// parsed from the OCR'd address text. A terminal's location is fixed and already known
+// here, so there's nothing for an address-text parse to get right that this doesn't
+// already have, and nothing for a per-photo OCR misread (e.g. a garbled state code) to
+// break.
+function findTerminalCityState(name) {
+  const entry = findTerminalEntry(name);
+  return entry ? { city: entry.city, state: entry.state } : null;
 }

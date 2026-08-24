@@ -87,7 +87,12 @@ function groupRowsIntoTrips(rows) {
 
 function structureOcrResult(ocrResult) {
   const trips = groupRowsIntoTrips(ocrResult.rows).map(({ tripNumber, lld, lul }) => {
-    const origin = parseCityState(lld.address);
+    // Origin city/state comes only from the LLD name's match in TERMINALS, never from
+    // parsing lld.address -- a pickup terminal's location is a fixed, curated fact, not
+    // something to re-derive per photo from text an OCR misread can corrupt. An LLD row
+    // whose name doesn't match any known terminal is simply unresolved (null), the same
+    // as it would be if TERMINALS didn't have it.
+    const origin = findTerminalCityState(lld.name);
     const destination = parseCityState(lul.address);
     const rate = findTariffRate(origin, destination);
 

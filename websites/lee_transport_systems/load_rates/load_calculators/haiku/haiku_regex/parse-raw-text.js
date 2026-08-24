@@ -3,6 +3,9 @@
 // can be fed straight into the existing, unmodified structureOcrResult() from
 // ../haiku_shared_js/structure.js -- all the trip pairing / city-state parsing / tariff lookup /
 // terminal lookup logic there is reused as-is, nothing about it changes for this path.
+// Depends on findTerminal from ../haiku_shared_js/terminals.js (loaded before this
+// script) for one thing only: deciding whether an LLD row with no parseable address is
+// still worth keeping.
 //
 // Validated against 13 real Driver Summary Report photos. Specifically accounts for:
 // a hazmat "Packing Group" code like "PG-II" false-matching as a state abbreviation if
@@ -82,12 +85,15 @@ function parseRawTextToRows(rawText) {
         }
       }
 
-      // No address found for this row -- leave it out rather than guess. With no LLD
-      // (or no LUL) row for this trip number, structureOcrResult's existing
-      // MISSING_ROW fallback takes over downstream.
-      if (!address) continue;
+      // No address found for this row -- normally leave it out rather than guess (with
+      // no LLD/LUL row for this trip number, structureOcrResult's MISSING_ROW fallback
+      // takes over downstream). Exception: an LLD row whose name matches a known
+      // terminal doesn't need its address at all -- structureOcrResult resolves that
+      // row's city/state from TERMINALS by name, not from this address text -- so keep
+      // the row even with no address found.
+      if (!address && !findTerminal(restOfLine)) continue;
 
-      rows.push({ tripNumber, rowType, orderNumber: orderMatch[1], name: restOfLine, address });
+      rows.push({ tripNumber, rowType, orderNumber: orderMatch[1], name: restOfLine, address: address || '' });
     }
   }
 
