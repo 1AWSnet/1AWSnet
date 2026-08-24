@@ -249,6 +249,7 @@ tr:nth-child(even) td { background: var(--bg-alt); }
 
 /* OCR test harness (load_calculators/haiku/haiku_frame, load_calculators/haiku/haiku_regex) */
 #status { margin: 1rem 0; font-weight: bold; }
+.upload-counter { font-size: 2.5rem; margin: 4px 0; }
 pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; text-align: left; border-radius: 6px; }
 #tripsTable { display: none; }
 #tripsTable td, #tripsTable th { text-align: center; white-space: normal; }

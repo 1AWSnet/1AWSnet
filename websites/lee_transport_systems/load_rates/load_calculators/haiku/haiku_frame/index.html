@@ -37,6 +37,11 @@
   <pre id="result"></pre>
 </details>
 
+<details id="previewDetails" style="display: none;">
+  <summary>What was actually sent to Claude</summary>
+  <img id="normalizedPreview" style="max-width: 100%;">
+</details>
+
 </div>
 
 <script src="../../../settlement_tariff/js/data.js"></script>
@@ -49,6 +54,8 @@ const fileNameEl = document.getElementById('fileName');
 const statusEl = document.getElementById('status');
 const resultEl = document.getElementById('result');
 const rawDetails = document.getElementById('rawDetails');
+const previewDetails = document.getElementById('previewDetails');
+const normalizedPreview = document.getElementById('normalizedPreview');
 const tripsTable = document.getElementById('tripsTable');
 const tripsBody = document.getElementById('tripsBody');
 const summaryEl = document.getElementById('summary');
@@ -94,7 +101,7 @@ document.getElementById('upload').addEventListener('click', async () => {
     return;
   }
 
-  statusEl.textContent = 'Uploading and extracting text... (This normally takes about 5 seconds.)';
+  startUploadCounter(statusEl);
   resultEl.textContent = '';
   rawDetails.style.display = 'none';
   tripsTable.style.display = 'none';
@@ -102,11 +109,14 @@ document.getElementById('upload').addEventListener('click', async () => {
 
   try {
     const normalized = await normalizeOrientation(file);
+    normalizedPreview.src = URL.createObjectURL(normalized);
+    previewDetails.style.display = 'block';
     const response = await fetch('/api/ocr-frame', {
       method: 'POST',
       headers: { 'Content-Type': 'image/jpeg' },
       body: normalized,
     });
+    stopUploadCounter();
 
     const data = await response.json();
     resultEl.textContent = JSON.stringify(data, null, 2);
@@ -120,6 +130,7 @@ document.getElementById('upload').addEventListener('click', async () => {
     statusEl.textContent = 'Done.';
     renderTrips(structureOcrResult(data));
   } catch (err) {
+    stopUploadCounter();
     statusEl.textContent = 'Request failed.';
     resultEl.textContent = String(err);
     rawDetails.style.display = 'block';

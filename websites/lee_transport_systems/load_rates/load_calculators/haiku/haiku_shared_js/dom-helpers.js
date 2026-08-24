@@ -68,3 +68,37 @@ function wireFileInput(fileInput, fileNameEl, statusEl) {
     statusEl.textContent = '';
   });
 }
+
+let uploadCounterInterval = null;
+
+// Replaces statusEl's content with a live 1-20s counter while the OCR request is in
+// flight, so waiting feels less like the page is stuck. Caps at 20 rather than
+// counting forever, matching the "try again" message telling the driver to give up
+// and retry around then. Call stopUploadCounter() once the request settles (success,
+// non-OK response, or a thrown error) so the counter doesn't keep running and
+// overwrite the result/error message a second later.
+function startUploadCounter(statusEl) {
+  stopUploadCounter();
+
+  statusEl.innerHTML = '';
+  const topLine = document.createElement('div');
+  topLine.textContent = 'Uploading and extracting text...';
+  const counterLine = document.createElement('div');
+  counterLine.className = 'upload-counter';
+  const bottomLine = document.createElement('div');
+  bottomLine.textContent = 'Try again if the counter reaches 20 seconds.';
+  statusEl.append(topLine, counterLine, bottomLine);
+
+  let seconds = 0;
+  const tick = () => {
+    seconds = Math.min(seconds + 1, 20);
+    counterLine.textContent = seconds;
+  };
+  tick();
+  uploadCounterInterval = setInterval(tick, 1000);
+}
+
+function stopUploadCounter() {
+  clearInterval(uploadCounterInterval);
+  uploadCounterInterval = null;
+}

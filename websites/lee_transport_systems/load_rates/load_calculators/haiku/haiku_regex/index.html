@@ -109,7 +109,7 @@ document.getElementById('upload').addEventListener('click', async () => {
     return;
   }
 
-  statusEl.textContent = 'Uploading and extracting text... (This normally takes about 5 seconds.)';
+  startUploadCounter(statusEl);
   resultEl.textContent = '';
   rawDetails.style.display = 'none';
   tripsTable.style.display = 'none';
@@ -124,6 +124,7 @@ document.getElementById('upload').addEventListener('click', async () => {
       headers: { 'Content-Type': 'image/jpeg' },
       body: normalized,
     });
+    stopUploadCounter();
 
     const text = await response.text();
     resultEl.textContent = text;
@@ -137,6 +138,7 @@ document.getElementById('upload').addEventListener('click', async () => {
     statusEl.textContent = 'Done.';
     renderTrips(structureOcrResult(parseRawTextToRows(text)));
   } catch (err) {
+    stopUploadCounter();
     statusEl.textContent = 'Request failed.';
     resultEl.textContent = String(err);
     rawDetails.style.display = 'block';
