@@ -100,7 +100,7 @@ function renderTrips(structured) {
   summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
 }
 
-wireFileInput(fileInput, fileNameEl);
+wireFileInput(fileInput, fileNameEl, statusEl);
 
 document.getElementById('upload').addEventListener('click', async () => {
   const file = fileInput.files[0];

@@ -60,8 +60,11 @@ async function normalizeOrientation(file) {
 // Keeps the visible filename text in sync with the hidden native file input --
 // the input itself is visually hidden in favor of a styled label button, since the
 // native "Browse..."/"Choose File" button text isn't consistent across browsers.
-function wireFileInput(fileInput, fileNameEl) {
+// Also clears statusEl, so a stale "Photo has not been selected." from a prior
+// no-file upload attempt doesn't linger once a file is actually chosen.
+function wireFileInput(fileInput, fileNameEl, statusEl) {
   fileInput.addEventListener('change', () => {
     fileNameEl.textContent = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+    statusEl.textContent = '';
   });
 }
