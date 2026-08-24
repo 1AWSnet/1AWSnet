@@ -33,7 +33,7 @@
 <div id="summary"></div>
 
 <details id="rawDetails" style="display: none;">
-  <summary>Raw OCR text</summary>
+  <summary>Raw OCR text <button id="copyRaw" type="button">Copy</button></summary>
   <pre id="result"></pre>
 </details>
 
@@ -99,6 +99,18 @@ function renderTrips(structured) {
     (structured.unmatchedCount ? ` (+ ${structured.unmatchedCount} trip(s) with no tariff match)` : '');
   summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
 }
+
+document.getElementById('copyRaw').addEventListener('click', (e) => {
+  // Stops the click from also toggling the <details> it sits inside, since the button
+  // is part of the <summary> row.
+  e.preventDefault();
+  e.stopPropagation();
+  navigator.clipboard.writeText(resultEl.textContent);
+  const btn = e.currentTarget;
+  const original = btn.textContent;
+  btn.textContent = 'Copied';
+  setTimeout(() => { btn.textContent = original; }, 1500);
+});
 
 wireFileInput(fileInput, fileNameEl, statusEl);
 

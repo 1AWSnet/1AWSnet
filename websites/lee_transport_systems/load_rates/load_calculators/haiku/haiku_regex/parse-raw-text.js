@@ -33,7 +33,10 @@ function parseRawTextToRows(rawText) {
   const dateMatch = rawText.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
   const driverMatch = rawText.match(/Driver:?\s*([A-Z][A-Za-z'-]+\s+[A-Z][A-Za-z'-]+)/);
 
-  const tripHeaderRe = /Trip\s*#?:\s*(\d+)/g;
+  // Matches on the word "Trip" alone and skips past whatever punctuation separates it
+  // from the number ("Trip: 1", "Trip 1", "Trip #1", ...) rather than enumerating every
+  // separator OCR might produce.
+  const tripHeaderRe = /Trip\D*(\d+)/g;
   const matches = [...rawText.matchAll(tripHeaderRe)];
   const rows = [];
 
