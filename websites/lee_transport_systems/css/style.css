@@ -143,6 +143,8 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 }
 .page ul a:hover { border-color: var(--sky); color: var(--sky); }
 .wip { color: var(--text-muted); font-size: 0.85rem; }
+.file-name { color: var(--text-muted); font-size: 0.85rem; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* Vertically centers .page content below the header -- opt-in via body.centered-page
    so short nav-menu pages (Load Rates, Load Calculators) can match the hero's 4-way
@@ -158,6 +160,7 @@ body.centered-page .page {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
 
 /* Landing hero (root index.html) */
@@ -231,6 +234,7 @@ input[type="text"], input[type="number"] {
 input[type="number"] { width: 60px; text-align: center; }
 input[type="text"] { width: 160px; }
 .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 16px auto; text-align: left; }
+.controls.stacked { flex-direction: column; width: fit-content; gap: 24px; }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
 /* Tables */

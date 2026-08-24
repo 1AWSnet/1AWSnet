@@ -8,15 +8,17 @@
 <script src="../../../../js/theme.js"></script>
 <script src="../../../../js/header.js"></script>
 </head>
-<body>
+<body class="centered-page">
 
 <script>renderSiteHeader('../../../../');</script>
 
 <div class="page">
-<h1>Haiku Regex</h1>
+<h1>🔣 Haiku Regex 🔣</h1>
 
-<div class="controls">
-<input type="file" id="photo" accept="image/*">
+<div class="controls stacked">
+<label class="tab-btn" for="photo">Choose File</label>
+<input type="file" id="photo" accept="image/*" class="visually-hidden">
+<span id="fileName" class="file-name">No file selected</span>
 <button id="upload">Upload &amp; extract</button>
 </div>
 
@@ -45,9 +47,11 @@
 <script src="../../../settlement_tariff/js/data.js"></script>
 <script src="../haiku_shared_js/terminals.js"></script>
 <script src="../haiku_shared_js/structure.js"></script>
+<script src="../haiku_shared_js/dom-helpers.js"></script>
 <script src="parse-raw-text.js"></script>
 <script>
 const fileInput = document.getElementById('photo');
+const fileNameEl = document.getElementById('fileName');
 const statusEl = document.getElementById('status');
 const resultEl = document.getElementById('result');
 const rawDetails = document.getElementById('rawDetails');
@@ -56,34 +60,6 @@ const normalizedPreview = document.getElementById('normalizedPreview');
 const tripsTable = document.getElementById('tripsTable');
 const tripsBody = document.getElementById('tripsBody');
 const summaryEl = document.getElementById('summary');
-
-function makeCell(text, className) {
-  const td = document.createElement('td');
-  if (className) td.className = className;
-  td.textContent = text;
-  return td;
-}
-
-function makeMultilineCell(lines, className) {
-  const td = document.createElement('td');
-  if (className) td.className = className;
-  lines.forEach((line, i) => {
-    if (i > 0) td.appendChild(document.createElement('br'));
-    td.appendChild(document.createTextNode(line));
-  });
-  return td;
-}
-
-function makeTripOrderCell(tripNumber, orderNumber) {
-  const td = document.createElement('td');
-  const bubble = document.createElement('span');
-  bubble.className = 'trip-bubble';
-  bubble.textContent = tripNumber;
-  td.appendChild(bubble);
-  td.appendChild(document.createElement('br'));
-  td.appendChild(document.createTextNode(orderNumber));
-  return td;
-}
 
 function makeRateCell(trip) {
   const td = document.createElement('td');
@@ -124,32 +100,7 @@ function renderTrips(structured) {
   summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
 }
 
-// Phone photos carry an EXIF orientation tag that browsers honor when displaying
-// the image (so it looks upright to the driver) but that Claude's vision API does
-// not — it reads raw pixel orientation, so a sideways-tagged photo arrives sideways
-// and is much more error-prone to extract from. Drawing through <img> + canvas bakes
-// in the correct orientation (browsers apply the EXIF hint during decode/draw) and the
-// canvas output has no orientation tag, so what gets uploaded is always upright.
-async function normalizeOrientation(file) {
-  const objectUrl = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = reject;
-      image.src = objectUrl;
-    });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    canvas.getContext('2d').drawImage(img, 0, 0);
-
-    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-  } finally {
-    URL.revokeObjectURL(objectUrl);
-  }
-}
+wireFileInput(fileInput, fileNameEl);
 
 document.getElementById('upload').addEventListener('click', async () => {
   const file = fileInput.files[0];
