@@ -21,8 +21,8 @@ const TERMINALS = [
   { address: 'Forbes Avenue', lines: ['Buckeye', 'Forbes', 'New Haven'] },
 
   // 280 WATERFRONT STREET, New Haven, CT
-  { address: ['280 Waterfront', '200 Waterfront'], lines: ['Buckeye', 'Waterfront', 'New Haven'] },
-  // 200 = OCR misread of 280
+  { address: ['280 Waterfront', '820 Waterfront', '200 Waterfront'], lines: ['Buckeye', 'Waterfront', 'New Haven'] },
+  // Additional addresses besides '280 Waterfront' are there to compensate for OCR misreads.
 
   // 500 WATERFRONT STREET, New Haven, CT
   { address: '500 Waterfront', lines: ['Global', 'New Haven'] },
