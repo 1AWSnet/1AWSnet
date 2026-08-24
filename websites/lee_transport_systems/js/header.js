@@ -1,15 +1,14 @@
 // Single source of truth for the site's top bar. Every page calls
 // renderSiteHeader('<relative path to site root>') as the first thing in <body>,
-// so editing this file changes the header on every page at once. Pass false as the
-// second argument to omit the back button (used on the homepage).
-function renderSiteHeader(homeHref, showBackButton) {
-  const backBtnHtml = showBackButton === false
-    ? ''
-    : '<button class="back-btn" id="backBtn" aria-label="Go back">&larr;</button>';
+// so editing this file changes the header on every page at once. The back
+// button always renders (even on the root page) so the header stays the same
+// width everywhere; on the root page it's just hidden via CSS since there's
+// no parent directory to go up to.
+function renderSiteHeader(homeHref) {
   document.write(
     '<header class="site-header">' +
       '<div class="left-group">' +
-        backBtnHtml +
+        '<button class="back-btn" id="backBtn" aria-label="Go back">&larr;</button>' +
         '<a class="home-link" href="' + homeHref + '">Lee Transport Systems</a>' +
       '</div>' +
       '<div class="menu">' +
@@ -26,5 +25,18 @@ function renderSiteHeader(homeHref, showBackButton) {
 
 document.addEventListener('DOMContentLoaded', function () {
   const backBtn = document.getElementById('backBtn');
-  if (backBtn) backBtn.addEventListener('click', function () { history.back(); });
+  if (!backBtn) return;
+
+  let path = location.pathname;
+  if (path === '/index.html') path = '/';
+  if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+
+  if (path === '/' || path === '') {
+    backBtn.classList.add('back-btn-hidden');
+    backBtn.disabled = true;
+    return;
+  }
+
+  const parentPath = path.slice(0, path.lastIndexOf('/') + 1) || '/';
+  backBtn.addEventListener('click', function () { location.href = parentPath; });
 });

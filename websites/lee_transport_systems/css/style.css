@@ -73,6 +73,7 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
   cursor: pointer;
 }
 .back-btn:hover { border-color: var(--sky); }
+.back-btn-hidden { visibility: hidden; }
 
 .site-header .menu { position: relative; }
 .hamburger-btn {
