@@ -61,12 +61,11 @@ function parseRawTextToRows(rawText) {
 
     const lines = chunk.split('\n');
     for (let li = 0; li < lines.length; li++) {
-      // "LD" tolerates a known misread that drops one of the two L's from "LLD" --
-      // normalized back to "LLD" below so nothing downstream needs to know about it. No
-      // equivalent misread of "LUL" has been seen.
-      const tagMatch = lines[li].match(/(?:^|\s)(LLD|LD|LUL)\s*(.*)$/);
+      // "LD"/"UL" tolerate a known misread that drops the leading L from "LLD"/"LUL" --
+      // normalized back to "LLD"/"LUL" below so nothing downstream needs to know about it.
+      const tagMatch = lines[li].match(/(?:^|\s)(LLD|LD|LUL|UL)\s*(.*)$/);
       if (!tagMatch) continue;
-      const rowType = tagMatch[1] === 'LD' ? 'LLD' : tagMatch[1];
+      const rowType = tagMatch[1] === 'LD' ? 'LLD' : tagMatch[1] === 'UL' ? 'LUL' : tagMatch[1];
       let restOfLine = tagMatch[2].trim();
 
       let nameLineIdx = li;
@@ -82,7 +81,7 @@ function parseRawTextToRows(rawText) {
 
       let address = null;
       for (let lj = nameLineIdx; lj < lines.length; lj++) {
-        if (lj > nameLineIdx && /\b(LLD|LUL)\b/.test(lines[lj])) break;
+        if (lj > nameLineIdx && /\b(LLD|LD|LUL|UL)\b/.test(lines[lj])) break;
         const searchText = lj === nameLineIdx ? restOfLine : lines[lj];
         const found = findAddressInText(searchText);
         if (found) {
