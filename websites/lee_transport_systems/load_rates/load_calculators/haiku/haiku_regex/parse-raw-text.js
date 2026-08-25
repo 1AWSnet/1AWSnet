@@ -102,10 +102,12 @@ function parseRawTextToRows(rawText) {
 
     // A line whose tag still literally reads "LLD"/"LD" but names no terminal in
     // TERMINALS is kept too (unresolved, rather than dropped), so a genuinely new
-    // terminal shows up instead of silently vanishing. Only lines the terminal-name
-    // pass above didn't already claim are considered here.
+    // terminal shows up instead of silently vanishing. Resolves the name the same way
+    // the tag-on-its-own-line layout does (falling to the next non-blank line) before
+    // checking it against TERMINALS -- checking the tag line itself isn't enough to
+    // know the terminal-name pass above already claimed this row, since in that layout
+    // the tag and the name are two different lines.
     for (let li = 0; li < lines.length; li++) {
-      if (findTerminal(lines[li])) continue;
       const tagMatch = lines[li].match(/(?:^|\s)(LLD|LD)\s*(.*)$/);
       if (!tagMatch) continue;
       let name = tagMatch[2].trim();
@@ -114,6 +116,7 @@ function parseRawTextToRows(rawText) {
           if (lines[lj].trim()) { name = lines[lj].trim(); break; }
         }
       }
+      if (findTerminal(name)) continue;
       rows.push({ tripNumber, rowType: 'LLD', orderNumber: orderMatch[1], name, address: '' });
     }
 
