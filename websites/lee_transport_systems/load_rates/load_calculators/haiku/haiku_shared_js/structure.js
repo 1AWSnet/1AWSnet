@@ -34,6 +34,16 @@ function cityStateKey(cityState) {
   return cityState ? `${cityState.city}, ${cityState.state}`.toLowerCase() : null;
 }
 
+// Every destination city that appears in the tariff tables, deduped and sorted -- the
+// full set of valid destinations a delivery's city can be corrected to.
+function allDestinationCities() {
+  const cities = new Set();
+  for (const tariff of TARIFFS) {
+    for (const [, destination] of tariff.rows) cities.add(destination);
+  }
+  return [...cities].sort();
+}
+
 // Returns null (not a $0 rate) when no tariff row matches, so a bad/unlisted
 // origin-destination pair is visibly unresolved instead of silently paying nothing.
 function findTariffRate(origin, destination) {

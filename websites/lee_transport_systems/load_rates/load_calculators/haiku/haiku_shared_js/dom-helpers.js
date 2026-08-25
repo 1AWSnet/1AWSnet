@@ -17,25 +17,6 @@ function getOcrPageElements() {
   };
 }
 
-function makeCell(text, className) {
-  const td = document.createElement('td');
-  if (className) td.className = className;
-  td.textContent = text;
-  return td;
-}
-
-// Built with DOM APIs (not innerHTML) so OCR'd text is always treated as plain text,
-// never parsed as markup, however it's punctuated.
-function makeMultilineCell(lines, className) {
-  const td = document.createElement('td');
-  if (className) td.className = className;
-  lines.forEach((line, i) => {
-    if (i > 0) td.appendChild(document.createElement('br'));
-    td.appendChild(document.createTextNode(line));
-  });
-  return td;
-}
-
 function makeTripOrderCell(tripNumber, orderNumber) {
   const td = document.createElement('td');
   const bubble = document.createElement('span');

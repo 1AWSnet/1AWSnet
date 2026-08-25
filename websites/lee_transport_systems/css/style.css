@@ -253,6 +253,17 @@ tr:nth-child(even) td { background: var(--bg-alt); }
 pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; text-align: left; border-radius: 6px; }
 #tripsTable { display: none; }
 #tripsTable td, #tripsTable th { text-align: center; white-space: normal; }
+#tripsTable select, #tripsTable input[type="text"] {
+  width: 100%;
+  max-width: 180px;
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text);
+}
+#tripsTable select.unmatched, #tripsTable input[type="text"].unmatched { border-color: var(--red); }
 .trip-bubble {
   display: inline-flex;
   align-items: center;

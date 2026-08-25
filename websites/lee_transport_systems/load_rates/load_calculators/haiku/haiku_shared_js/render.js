@@ -1,45 +1,132 @@
 // Renders a structured OCR result (structure.js's structureOcrResult output) into a
 // page's trips table and summary line. Shared by haiku_frame/index.html and
-// haiku_regex/index.html. Depends on getOcrPageElements / makeCell / makeMultilineCell /
-// makeTripOrderCell (dom-helpers.js) -- loaded before this script.
+// haiku_regex/index.html. Depends on getOcrPageElements (dom-helpers.js), TERMINALS /
+// findTerminalEntry (terminals.js), and findTariffRate / allDestinationCities
+// (structure.js) -- all loaded before this script.
+//
+// OCR can misread or fully drop a trip's origin terminal or destination city, so every
+// origin/destination cell is an editable control, not plain text -- a dropdown of known
+// terminals for the origin, a city text box with autocomplete for the destination.
+// Picking a value recomputes that trip's rate immediately and updates the summary
+// total, but never locks in: both controls stay editable so a wrong pick can be
+// corrected later.
 
 const { tripsTable, tripsBody, summaryEl } = getOcrPageElements();
 
-function makeRateCell(trip) {
+// Backs every destination input's autocomplete list -- one shared <datalist>, since its
+// options (every city the tariff tables know about) are the same for every row.
+const destinationCities = allDestinationCities();
+const destinationCitiesListEl = document.createElement('datalist');
+destinationCitiesListEl.id = 'haikuDestinationCities';
+for (const city of destinationCities) {
+  const option = document.createElement('option');
+  option.value = city;
+  destinationCitiesListEl.appendChild(option);
+}
+document.body.appendChild(destinationCitiesListEl);
+
+function terminalLabel(entry) {
+  return entry.lines.join(' — ');
+}
+
+// Origin cell: a dropdown of every known terminal plus "UNRECOGNIZED", pre-selected to
+// whichever terminal (if any) the OCR'd name matched. Changing it updates the trip's
+// origin city/state directly and calls onEdit to recompute the rate.
+function buildOriginCell(trip, onEdit) {
   const td = document.createElement('td');
-  const amount = document.createElement('span');
-  amount.className = trip.rate ? 'rate-amount' : 'rate-amount unmatched';
-  amount.textContent = trip.rate ? `$${trip.rate.newRate}` : '$??';
-  td.appendChild(amount);
+  const select = document.createElement('select');
+
+  const unrecognized = document.createElement('option');
+  unrecognized.value = '';
+  unrecognized.textContent = 'UNRECOGNIZED';
+  select.appendChild(unrecognized);
+
+  TERMINALS.forEach((entry, i) => {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = terminalLabel(entry);
+    select.appendChild(option);
+  });
+
+  const matched = trip.origin.name === '(missing)' ? null : findTerminalEntry(trip.origin.name);
+  select.value = matched ? TERMINALS.indexOf(matched) : '';
+  select.className = matched ? '' : 'unmatched';
+
+  select.addEventListener('change', () => {
+    const entry = select.value === '' ? null : TERMINALS[Number(select.value)];
+    trip.origin.city = entry ? entry.city : null;
+    trip.origin.state = entry ? entry.state : null;
+    trip.origin.terminalLines = entry ? entry.lines : null;
+    select.className = entry ? '' : 'unmatched';
+    onEdit();
+  });
+
+  td.appendChild(select);
   return td;
 }
 
-// structureOcrResult() (structure.js) flags a trip number that came up short an LLD or
-// LUL row with its MISSING_ROW placeholder, whose name is literally "(missing)". Swap
-// that for a clearer flag here at render time only — no change to structure.js needed
-// for that.
-function originDisplay(trip) {
-  if (trip.origin.name === '(missing)') return ['UNRECOGNIZED!'];
-  return trip.origin.terminalLines || [`${trip.origin.name} — ${trip.origin.address}`];
+// Destination cell: a text box with a native autocomplete list of every tariff city.
+// Deliveries are arbitrary consignees, not a curated set, so unlike the origin dropdown
+// this takes free text -- it only resolves to a city once the typed text exactly
+// matches one of the known ones (case-insensitively).
+function buildDestinationCell(trip, onEdit) {
+  const td = document.createElement('td');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'UNRECOGNIZED';
+  input.setAttribute('list', destinationCitiesListEl.id);
+  input.value = trip.destination.city ? `${trip.destination.city}, ${trip.destination.state}` : '';
+  input.className = trip.destination.city ? '' : 'unmatched';
+
+  input.addEventListener('change', () => {
+    const typed = input.value.trim();
+    const match = destinationCities.find((city) => city.toLowerCase() === typed.toLowerCase());
+    const commaIndex = match ? match.lastIndexOf(',') : -1;
+    trip.destination.city = match ? match.slice(0, commaIndex).trim() : null;
+    trip.destination.state = match ? match.slice(commaIndex + 1).trim() : null;
+    input.value = match || typed;
+    input.className = match ? '' : 'unmatched';
+    onEdit();
+  });
+
+  td.appendChild(input);
+  return td;
 }
-function destinationDisplay(trip) {
-  if (trip.destination.name === '(missing)') return 'UNRECOGNIZED!';
-  return trip.destination.city || `${trip.destination.name} — ${trip.destination.address}`;
+
+function paintRate(amountEl, trip) {
+  amountEl.className = trip.rate ? 'rate-amount' : 'rate-amount unmatched';
+  amountEl.textContent = trip.rate ? `$${trip.rate.newRate}` : '$??';
+}
+
+function updateSummary(structured) {
+  const matchedTotal = structured.trips.reduce((sum, t) => sum + (t.rate ? t.rate.newRate : 0), 0);
+  const unmatchedCount = structured.trips.filter((t) => !t.rate).length;
+  const totalText = `Matched total: $${matchedTotal}` +
+    (unmatchedCount ? ` (+ ${unmatchedCount} trip(s) with no tariff match)` : '');
+  summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
 }
 
 function renderTrips(structured) {
   tripsBody.innerHTML = '';
   for (const trip of structured.trips) {
     const tr = document.createElement('tr');
+    const rateTd = document.createElement('td');
+    const rateAmount = document.createElement('span');
+    rateTd.appendChild(rateAmount);
+    paintRate(rateAmount, trip);
+
+    const onEdit = () => {
+      trip.rate = findTariffRate(trip.origin, trip.destination);
+      paintRate(rateAmount, trip);
+      updateSummary(structured);
+    };
+
     tr.appendChild(makeTripOrderCell(trip.tripNumber, trip.orderNumber));
-    tr.appendChild(makeMultilineCell(originDisplay(trip), trip.origin.name === '(missing)' ? 'unmatched' : ''));
-    tr.appendChild(makeCell(destinationDisplay(trip), trip.destination.name === '(missing)' ? 'unmatched' : ''));
-    tr.appendChild(makeRateCell(trip));
+    tr.appendChild(buildOriginCell(trip, onEdit));
+    tr.appendChild(buildDestinationCell(trip, onEdit));
+    tr.appendChild(rateTd);
     tripsBody.appendChild(tr);
   }
   tripsTable.style.display = structured.trips.length ? 'table' : 'none';
-
-  const totalText = `Matched total: $${structured.matchedTotal}` +
-    (structured.unmatchedCount ? ` (+ ${structured.unmatchedCount} trip(s) with no tariff match)` : '');
-  summaryEl.textContent = `${structured.driverName} — ${structured.date}. ${totalText}`;
+  updateSummary(structured);
 }
