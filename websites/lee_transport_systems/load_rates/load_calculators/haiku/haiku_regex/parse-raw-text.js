@@ -4,15 +4,16 @@
 // ../haiku_shared_js/structure.js -- all the trip pairing / city-state parsing / tariff lookup /
 // terminal lookup logic there is reused as-is, nothing about it changes for this path.
 // Depends on findTerminal from ../haiku_shared_js/terminals.js (loaded before this
-// script) for one thing only: deciding whether an LLD row with no parseable address is
-// still worth keeping.
+// script): LLD rows are found by matching a known terminal name directly, rather than
+// by reading the "LLD" tag OCR misreads inconsistently (see parseRawTextToRows below).
 //
-// Validated against 13 real Driver Summary Report photos. Specifically accounts for:
+// Validated against real Driver Summary Report photos. Specifically accounts for:
 // a hazmat "Packing Group" code like "PG-II" false-matching as a state abbreviation if
 // state codes aren't checked against a real list; two different per-row text layouts
-// (name+tag on one line vs. each field on its own line); and OCR noise that reads like
-// a "Trip: N" header (e.g. from handwriting bleeding into a totals section) but isn't
-// one, which is rejected by requiring a real Order # nearby.
+// (name+tag on one line vs. each field on its own line); OCR noise that reads like a
+// "Trip: N" header (e.g. from handwriting bleeding into a totals section) but isn't
+// one, rejected by requiring a real Order # nearby; and OCR dropping the comma before
+// the city, after it, or both, in a printed street address.
 
 const STATE_CODES = new Set([
   'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY',
@@ -86,12 +87,43 @@ function parseRawTextToRows(rawText) {
     if (!orderMatch) continue;
 
     const lines = chunk.split('\n');
+
+    // LLD (pickup terminal) rows are found by matching a known terminal name anywhere
+    // in the line, not by reading the "LLD" tag -- OCR misreads that tag too many
+    // different ways to keep tolerating one at a time (LD, R LO, ...), and a terminal's
+    // full name is far more reliably read than a two-letter tag. No address is kept for
+    // these rows -- structureOcrResult resolves an LLD row's city/state from TERMINALS
+    // by name, never by parsing its printed address (see the comment there).
+    for (const line of lines) {
+      if (findTerminal(line)) {
+        rows.push({ tripNumber, rowType: 'LLD', orderNumber: orderMatch[1], name: line.trim(), address: '' });
+      }
+    }
+
+    // A line whose tag still literally reads "LLD"/"LD" but names no terminal in
+    // TERMINALS is kept too (unresolved, rather than dropped), so a genuinely new
+    // terminal shows up instead of silently vanishing. Only lines the terminal-name
+    // pass above didn't already claim are considered here.
     for (let li = 0; li < lines.length; li++) {
-      // "LD"/"UL" tolerate a known misread that drops the leading L from "LLD"/"LUL" --
-      // normalized back to "LLD"/"LUL" below so nothing downstream needs to know about it.
-      const tagMatch = lines[li].match(/(?:^|\s)(LLD|LD|LUL|UL)\s*(.*)$/);
+      if (findTerminal(lines[li])) continue;
+      const tagMatch = lines[li].match(/(?:^|\s)(LLD|LD)\s*(.*)$/);
       if (!tagMatch) continue;
-      const rowType = tagMatch[1] === 'LD' ? 'LLD' : tagMatch[1] === 'UL' ? 'LUL' : tagMatch[1];
+      let name = tagMatch[2].trim();
+      if (!name) {
+        for (let lj = li + 1; lj < lines.length; lj++) {
+          if (lines[lj].trim()) { name = lines[lj].trim(); break; }
+        }
+      }
+      rows.push({ tripNumber, rowType: 'LLD', orderNumber: orderMatch[1], name, address: '' });
+    }
+
+    // LUL (delivery) rows are still found by their tag -- deliveries are arbitrary
+    // consignees, not a curated list to match names against the way LLD terminals are.
+    // "UL" tolerates a known misread that drops the leading L from "LUL" -- normalized
+    // back to "LUL" below so nothing downstream needs to know about it.
+    for (let li = 0; li < lines.length; li++) {
+      const tagMatch = lines[li].match(/(?:^|\s)(LUL|UL)\s*(.*)$/);
+      if (!tagMatch) continue;
       let restOfLine = tagMatch[2].trim();
 
       let nameLineIdx = li;
@@ -105,32 +137,25 @@ function parseRawTextToRows(rawText) {
         }
       }
 
-      // LLD rows are pickup terminals, not deliveries -- structureOcrResult resolves
-      // an LLD row's city/state from TERMINALS by matching its name, never from
-      // parsing its printed address (see the comment there), so there's nothing to
-      // gain -- and OCR noise to risk -- by hunting for a "Street, City, ST" pattern
-      // in the LLD section. Only LUL (delivery) rows need their address parsed.
       let address = null;
-      if (rowType === 'LUL') {
-        for (let lj = nameLineIdx; lj < lines.length; lj++) {
-          if (lj > nameLineIdx && /\b(LLD|LD|LUL|UL)\b/.test(lines[lj])) break;
-          const searchText = lj === nameLineIdx ? restOfLine : lines[lj];
-          const found = findAddressInText(searchText);
-          if (found) {
-            address = found;
-            break;
-          }
+      for (let lj = nameLineIdx; lj < lines.length; lj++) {
+        // Stops at the next delivery row or the next pickup terminal, whichever comes
+        // first, so this row's address search can't bleed into either one.
+        if (lj > nameLineIdx && (/\b(LUL|UL)\b/.test(lines[lj]) || findTerminal(lines[lj]))) break;
+        const searchText = lj === nameLineIdx ? restOfLine : lines[lj];
+        const found = findAddressInText(searchText);
+        if (found) {
+          address = found;
+          break;
         }
       }
 
-      // No address found for this LUL row -- normally leave it out rather than guess
-      // (with no LLD/LUL row for this trip number, structureOcrResult's MISSING_ROW
-      // fallback takes over downstream). Exception: an LLD row whose name matches a
-      // known terminal doesn't need an address at all -- keep it even though address
-      // is always null here (LLD rows never search for one, per above).
-      if (!address && !findTerminal(restOfLine)) continue;
+      // No address found for this row -- leave it out rather than guess; with no LUL
+      // row for this trip number, structureOcrResult's MISSING_ROW fallback takes over
+      // downstream.
+      if (!address) continue;
 
-      rows.push({ tripNumber, rowType, orderNumber: orderMatch[1], name: restOfLine, address: address || '' });
+      rows.push({ tripNumber, rowType: 'LUL', orderNumber: orderMatch[1], name: restOfLine, address });
     }
   }
 
