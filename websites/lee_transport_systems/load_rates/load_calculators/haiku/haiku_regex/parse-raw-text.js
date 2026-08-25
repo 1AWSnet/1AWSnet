@@ -33,15 +33,23 @@ function findAddressInText(text) {
     if (STATE_CODES.has(m[2])) return m[1].trim();
   }
 
-  // OCR sometimes drops the comma between the street and the city (e.g. "607 NEW PARK
-  // AVENUE West Hartford, CT"). The city can be one word or two, so it can't be
-  // recovered by counting words back from the state code -- instead, split the street
-  // from the city at a street-suffix word (AVENUE, STREET, ...) and treat everything
-  // after it, up to the state code, as the city, however many words that is.
-  const re2 = new RegExp(`(\\d[^,\\n]*?\\b${STREET_SUFFIXES}\\b)\\s+([^,\\n]+),\\s*([A-Z]{2})\\b`, 'gi');
-  while ((m = re2.exec(text))) {
-    const state = m[3].toUpperCase();
-    if (STATE_CODES.has(state)) return `${m[1]}, ${m[2]}, ${state}`.trim();
+  // OCR sometimes drops the comma before the city, after it, or both (e.g. "607 NEW
+  // PARK AVENUE West Hartford, CT" or "1589 Main Street, Willimantic CT"). The city
+  // can be one word or two, so it can't be recovered by counting words back from the
+  // state code -- instead, split the street from the city at a street-suffix word
+  // (AVENUE, STREET, ...), found case-insensitively since OCR mixes ALL CAPS and Title
+  // Case. The state code match right after it stays case-sensitive (real state codes
+  // are always printed uppercase), done as a separate step so an ordinary word ending
+  // right after the suffix -- e.g. "..West" -- can't be mistaken for one the way it
+  // would if the whole match were case-insensitive.
+  const suffixRe = new RegExp(`\\d[^\\n]*?\\b${STREET_SUFFIXES}\\b`, 'i');
+  const suffixMatch = suffixRe.exec(text);
+  if (!suffixMatch) return null;
+  const street = suffixMatch[0];
+  const rest = text.slice(suffixMatch.index + street.length);
+  const tailMatch = rest.match(/^\.?,?\s+([^,\n]+?),?\s*([A-Z]{2})\b/);
+  if (tailMatch && STATE_CODES.has(tailMatch[2])) {
+    return `${street}, ${tailMatch[1]}, ${tailMatch[2]}`.trim();
   }
 
   return null;
