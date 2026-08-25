@@ -24,7 +24,7 @@ const STATE_CODES = new Set([
 // them (see findAddressInText below). Deliberately not exhaustive -- just the suffixes
 // seen in real scans so far; add more here as new ones turn up.
 const STREET_SUFFIXES =
-  '(?:STREET|AVENUE|PARKWAY|TURNPIKE|BOULEVARD|HIGHWAY|ROUTE|CIRCLE|DRIVE|ROAD|LANE|PLACE|COURT|WAY)';
+  '(?:STREET|ROAD|AVENUE|DRIVE|LANE|PLACE|COURT|WAY|BOULEVARD|PARKWAY|TURNPIKE|HIGHWAY|ROUTE|CIRCLE)';
 
 function findAddressInText(text) {
   const re = /(\d[^,\n]*,\s*[^,\n]+,\s*([A-Z]{2}))\b/g;
