@@ -93,31 +93,15 @@ function parseRawTextToRows(rawText) {
     // different ways to keep tolerating one at a time (LD, R LO, ...), and a terminal's
     // full name is far more reliably read than a two-letter tag. No address is kept for
     // these rows -- structureOcrResult resolves an LLD row's city/state from TERMINALS
-    // by name, never by parsing its printed address (see the comment there).
+    // by name, never by parsing its printed address (see the comment there). A pickup
+    // terminal not yet in TERMINALS is simply unresolved (structureOcrResult falls back
+    // to a MISSING_ROW placeholder for that trip, which the UI shows as an editable
+    // "UNRECOGNIZED" control the same as any other unresolved origin), the same as it
+    // would be if it were listed but this particular photo's name were unreadable.
     for (const line of lines) {
       if (findTerminal(line)) {
         rows.push({ tripNumber, rowType: 'LLD', orderNumber: orderMatch[1], name: line.trim(), address: '' });
       }
-    }
-
-    // A line whose tag still literally reads "LLD"/"LD" but names no terminal in
-    // TERMINALS is kept too (unresolved, rather than dropped), so a genuinely new
-    // terminal shows up instead of silently vanishing. Resolves the name the same way
-    // the tag-on-its-own-line layout does (falling to the next non-blank line) before
-    // checking it against TERMINALS -- checking the tag line itself isn't enough to
-    // know the terminal-name pass above already claimed this row, since in that layout
-    // the tag and the name are two different lines.
-    for (let li = 0; li < lines.length; li++) {
-      const tagMatch = lines[li].match(/(?:^|\s)(LLD|LD)\s*(.*)$/);
-      if (!tagMatch) continue;
-      let name = tagMatch[2].trim();
-      if (!name) {
-        for (let lj = li + 1; lj < lines.length; lj++) {
-          if (lines[lj].trim()) { name = lines[lj].trim(); break; }
-        }
-      }
-      if (findTerminal(name)) continue;
-      rows.push({ tripNumber, rowType: 'LLD', orderNumber: orderMatch[1], name, address: '' });
     }
 
     // LUL (delivery) rows are still found by their tag -- deliveries are arbitrary
