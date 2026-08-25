@@ -4,12 +4,13 @@
 // findTerminalEntry (terminals.js), and findTariffRate / allDestinationCities
 // (structure.js) -- all loaded before this script.
 //
-// OCR can misread or fully drop a trip's origin terminal or destination city, so every
-// origin/destination cell is an editable control, not plain text -- a dropdown of known
-// terminals for the origin, a city text box with autocomplete for the destination.
-// Picking a value recomputes that trip's rate immediately and updates the summary
-// total, but never locks in: both controls stay editable so a wrong pick can be
-// corrected later.
+// OCR can misread or fully drop a trip's origin terminal or destination city. A row
+// that already resolved (parse-raw-text.js/Haiku found a real match) just shows plain
+// text -- there's nothing to fix. Only an unresolved row gets an editable control: a
+// dropdown of known terminals for the origin, a city text box with autocomplete for
+// the destination. Picking a value recomputes that trip's rate immediately and updates
+// the summary total, but never locks in: the control stays there and editable so a
+// wrong pick can be corrected again later.
 
 const { tripsTable, tripsBody, summaryEl } = getOcrPageElements();
 
@@ -29,10 +30,24 @@ function terminalLabel(entry) {
   return entry.lines.join(' — ');
 }
 
-// Origin cell: a dropdown of every known terminal plus "UNRECOGNIZED", pre-selected to
-// whichever terminal (if any) the OCR'd name matched. Changing it updates the trip's
-// origin city/state directly and calls onEdit to recompute the rate.
+// Built with DOM APIs (not innerHTML) so OCR'd text is always treated as plain text,
+// never parsed as markup, however it's punctuated.
+function makeTextCell(lines) {
+  const td = document.createElement('td');
+  lines.forEach((line, i) => {
+    if (i > 0) td.appendChild(document.createElement('br'));
+    td.appendChild(document.createTextNode(line));
+  });
+  return td;
+}
+
+// Origin cell: plain text once a terminal is already matched -- nothing to fix, so
+// nothing to edit. Only an unresolved row gets the dropdown (every known terminal plus
+// "UNRECOGNIZED"), which stays editable so a wrong pick can be changed again later.
 function buildOriginCell(trip, onEdit) {
+  const matched = trip.origin.name === '(missing)' ? null : findTerminalEntry(trip.origin.name);
+  if (matched) return makeTextCell(matched.lines);
+
   const td = document.createElement('td');
   const select = document.createElement('select');
 
@@ -48,10 +63,7 @@ function buildOriginCell(trip, onEdit) {
     select.appendChild(option);
   });
 
-  const matched = trip.origin.name === '(missing)' ? null : findTerminalEntry(trip.origin.name);
-  select.value = matched ? TERMINALS.indexOf(matched) : '';
-  select.className = matched ? '' : 'unmatched';
-
+  select.className = 'unmatched';
   select.addEventListener('change', () => {
     const entry = select.value === '' ? null : TERMINALS[Number(select.value)];
     trip.origin.city = entry ? entry.city : null;
@@ -65,18 +77,21 @@ function buildOriginCell(trip, onEdit) {
   return td;
 }
 
-// Destination cell: a text box with a native autocomplete list of every tariff city.
-// Deliveries are arbitrary consignees, not a curated set, so unlike the origin dropdown
-// this takes free text -- it only resolves to a city once the typed text exactly
-// matches one of the known ones (case-insensitively).
+// Destination cell: plain text once a city is already resolved from the address --
+// nothing to fix, so nothing to edit. Only an unresolved row gets the text box (with a
+// native autocomplete list of every tariff city). Deliveries are arbitrary consignees,
+// not a curated set, so unlike the origin dropdown this takes free text -- it only
+// resolves to a city once the typed text exactly matches one of the known ones
+// (case-insensitively).
 function buildDestinationCell(trip, onEdit) {
+  if (trip.destination.city) return makeTextCell([`${trip.destination.city}, ${trip.destination.state}`]);
+
   const td = document.createElement('td');
   const input = document.createElement('input');
   input.type = 'text';
   input.placeholder = 'UNRECOGNIZED';
   input.setAttribute('list', destinationCitiesListEl.id);
-  input.value = trip.destination.city ? `${trip.destination.city}, ${trip.destination.state}` : '';
-  input.className = trip.destination.city ? '' : 'unmatched';
+  input.className = 'unmatched';
 
   input.addEventListener('change', () => {
     const typed = input.value.trim();
