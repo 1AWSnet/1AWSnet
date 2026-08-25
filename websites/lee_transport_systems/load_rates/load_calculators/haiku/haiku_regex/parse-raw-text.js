@@ -20,12 +20,30 @@ const STATE_CODES = new Set([
   'OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC',
 ]);
 
+// Street-suffix words used to split "street city" when OCR drops the comma between
+// them (see findAddressInText below). Deliberately not exhaustive -- just the suffixes
+// seen in real scans so far; add more here as new ones turn up.
+const STREET_SUFFIXES =
+  '(?:STREET|AVENUE|PARKWAY|TURNPIKE|BOULEVARD|HIGHWAY|ROUTE|CIRCLE|DRIVE|ROAD|LANE|PLACE|COURT|WAY)';
+
 function findAddressInText(text) {
   const re = /(\d[^,\n]*,\s*[^,\n]+,\s*([A-Z]{2}))\b/g;
   let m;
   while ((m = re.exec(text))) {
     if (STATE_CODES.has(m[2])) return m[1].trim();
   }
+
+  // OCR sometimes drops the comma between the street and the city (e.g. "607 NEW PARK
+  // AVENUE West Hartford, CT"). The city can be one word or two, so it can't be
+  // recovered by counting words back from the state code -- instead, split the street
+  // from the city at a street-suffix word (AVENUE, STREET, ...) and treat everything
+  // after it, up to the state code, as the city, however many words that is.
+  const re2 = new RegExp(`(\\d[^,\\n]*?\\b${STREET_SUFFIXES}\\b)\\s+([^,\\n]+),\\s*([A-Z]{2})\\b`, 'gi');
+  while ((m = re2.exec(text))) {
+    const state = m[3].toUpperCase();
+    if (STATE_CODES.has(state)) return `${m[1]}, ${m[2]}, ${state}`.trim();
+  }
+
   return null;
 }
 
@@ -79,23 +97,29 @@ function parseRawTextToRows(rawText) {
         }
       }
 
+      // LLD rows are pickup terminals, not deliveries -- structureOcrResult resolves
+      // an LLD row's city/state from TERMINALS by matching its name, never from
+      // parsing its printed address (see the comment there), so there's nothing to
+      // gain -- and OCR noise to risk -- by hunting for a "Street, City, ST" pattern
+      // in the LLD section. Only LUL (delivery) rows need their address parsed.
       let address = null;
-      for (let lj = nameLineIdx; lj < lines.length; lj++) {
-        if (lj > nameLineIdx && /\b(LLD|LD|LUL|UL)\b/.test(lines[lj])) break;
-        const searchText = lj === nameLineIdx ? restOfLine : lines[lj];
-        const found = findAddressInText(searchText);
-        if (found) {
-          address = found;
-          break;
+      if (rowType === 'LUL') {
+        for (let lj = nameLineIdx; lj < lines.length; lj++) {
+          if (lj > nameLineIdx && /\b(LLD|LD|LUL|UL)\b/.test(lines[lj])) break;
+          const searchText = lj === nameLineIdx ? restOfLine : lines[lj];
+          const found = findAddressInText(searchText);
+          if (found) {
+            address = found;
+            break;
+          }
         }
       }
 
-      // No address found for this row -- normally leave it out rather than guess (with
-      // no LLD/LUL row for this trip number, structureOcrResult's MISSING_ROW fallback
-      // takes over downstream). Exception: an LLD row whose name matches a known
-      // terminal doesn't need its address at all -- structureOcrResult resolves that
-      // row's city/state from TERMINALS by name, not from this address text -- so keep
-      // the row even with no address found.
+      // No address found for this LUL row -- normally leave it out rather than guess
+      // (with no LLD/LUL row for this trip number, structureOcrResult's MISSING_ROW
+      // fallback takes over downstream). Exception: an LLD row whose name matches a
+      // known terminal doesn't need an address at all -- keep it even though address
+      // is always null here (LLD rows never search for one, per above).
       if (!address && !findTerminal(restOfLine)) continue;
 
       rows.push({ tripNumber, rowType, orderNumber: orderMatch[1], name: restOfLine, address: address || '' });
