@@ -4,10 +4,12 @@
 // startUploadCounter / stopUploadCounter (../haiku_shared_js/dom-helpers.js),
 // structureOcrResult (../haiku_shared_js/structure.js), parseRawTextToRows
 // (parse-raw-text.js), and renderTrips (render.js) -- all loaded before this script.
+// Doesn't re-destructure tripsTable/summaryEl here even though they're used below --
+// render.js already declared those consts, and redeclaring the same const in a second
+// <script> tag is a SyntaxError that silently kills this whole file.
 
 const {
-  fileInput, fileNameEl, statusEl, resultEl, rawDetails, previewDetails,
-  normalizedPreview, tripsTable, summaryEl,
+  fileInput, fileNameEl, statusEl, resultEl, rawDetails, previewDetails, normalizedPreview,
 } = getOcrPageElements();
 
 wireCopyButton(document.getElementById('copyRaw'), resultEl);
