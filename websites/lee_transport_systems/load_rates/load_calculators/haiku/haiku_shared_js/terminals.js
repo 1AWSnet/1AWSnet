@@ -19,8 +19,14 @@
 // when Haiku's OCR misreads a given terminal's printed name more than one way, so
 // each known misread is its own array item instead of a separate TERMINALS entry.
 const TERMINALS = [
+    // 250 Eagles Nest Road, Bridgeport, CT
+  { name: 'SPRAGUE BRIDGEPORT', lines: ['Sprague', 'Bridgeport'], city: 'Bridgeport', state: 'CT' },
+
+  // 250 Eagles Nest Road, Bridgeport, CT
+  { name: 'CALL DISPATCH- BRIDGEPORT', lines: ['Call Dispatch', 'Bridgeport'], city: 'Bridgeport', state: 'CT' },
+
   // 100 Waterfront St., New Haven, CT
-  { name: 'CALL DISPATCH', lines: ['Call Dispatch', 'New Haven'], city: 'New Haven', state: 'CT' },
+  { name: 'CALL DISPATCH- NEW HAVEN', lines: ['Call Dispatch', 'New Haven'], city: 'New Haven', state: 'CT' },
 
   // 134 Forbes Avenue, New Haven, CT
   { name: 'MAGELLAN FORBES', lines: ['Buckeye', 'Forbes', 'New Haven'], city: 'New Haven', state: 'CT' },
@@ -33,9 +39,6 @@ const TERMINALS = [
 
   // 481 East Shore Parkway, New Haven, CT
   { name: 'MOTIVA NEW HAVEN', lines: ['Shell/Motiva', 'New Haven'], city: 'New Haven', state: 'CT' },
-
-  // 250 Eagles Nest Road, Bridgeport, CT
-  { name: 'SPRAGUE BRIDGEPORT', lines: ['Sprague', 'Bridgeport'], city: 'Bridgeport', state: 'CT' },
 
   // 109 Dividend Road, Rocky Hill, CT
   { name: 'CITGO ROCKY HILL', lines: ['CITGO', 'Rocky Hill'], city: 'Rocky Hill', state: 'CT' },
