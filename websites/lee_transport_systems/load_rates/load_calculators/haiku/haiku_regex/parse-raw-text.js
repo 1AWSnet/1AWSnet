@@ -62,14 +62,23 @@ function parseRawTextToRows(rawText) {
 
   // Matches on the word "Trip" alone and skips past whatever punctuation separates it
   // from the number ("Trip: 1", "Trip 1", "Trip #1", ...) rather than enumerating every
-  // separator OCR might produce.
-  const tripHeaderRe = /Trip\D*(\d+)/g;
+  // separator OCR might produce -- but only punctuation/whitespace (":", "#", spaces),
+  // never arbitrary text. A greedier \D* here would, when OCR drops the trip's own
+  // number, skip straight past it into "Order #: 1275338" and capture the ORDER number
+  // as if it were the trip number -- which also swallows the "Order #:" text itself
+  // into this match, so the order-number lookup below finds nothing and the whole trip
+  // gets rejected as noise. Stopping at the first non-separator character means a
+  // missing number here just leaves the capture group empty instead.
+  const tripHeaderRe = /Trip[:\s#]*(\d+)?/g;
   const matches = [...rawText.matchAll(tripHeaderRe)];
   const rows = [];
 
   for (let i = 0; i < matches.length; i++) {
     const match = matches[i];
-    const tripNumber = match[1];
+    // A missing capture (OCR dropped the trip's own number) falls back to this
+    // header's position among the trip headers found -- 1st is trip 1, 2nd is trip 2,
+    // and so on, which is safe because these reports always number trips in order.
+    const tripNumber = match[1] || String(i + 1);
     const start = match.index + match[0].length;
     const end = i + 1 < matches.length ? matches[i + 1].index : rawText.length;
     const chunk = rawText.slice(start, end);
