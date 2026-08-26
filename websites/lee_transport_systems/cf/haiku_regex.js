@@ -10,6 +10,8 @@ Scan the page like a raster scan: start at the top-left corner, read across to t
 
 Transcribe every distinct piece of text you see, including short codes, abbreviations, and acronyms as short as two or three letters, even if they appear isolated, small, faint, stamped, or repeated elsewhere on the page. Never omit, merge, or paraphrase any text based on your own judgment of what is important — every printed character group must appear in your output exactly as printed.
 
+This document uses two specific three-letter tags — "LLD" and "LUL" — that always appear immediately after a row's sequence number, right before a terminal or consignee name. These tags are critical and must never be omitted, even when the surrounding row is crowded with handwriting, close to a table border, or otherwise hard to read. If you can identify the row's sequence number and terminal name, the tag is present on that same line — actively look for it and include it exactly as printed.
+
 Output only the raw transcribed text, as plain running text, in the order described above. Do not add extra spaces, indentation, or blank lines to represent where words are positioned on the page — use only normal single spaces and line breaks, the same as you would to write out what the page says as continuous text. No commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;
 
 // This prompt was working 99.99% correct. The issue was that it was sometimes dropping the "LUL" tag.
