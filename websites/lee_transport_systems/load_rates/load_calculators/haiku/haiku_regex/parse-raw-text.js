@@ -118,7 +118,7 @@ function parseRawTextToRows(rawText) {
     // "UL" tolerates a known misread that drops the leading L from "LUL" -- normalized
     // back to "LUL" below so nothing downstream needs to know about it.
     for (let li = 0; li < lines.length; li++) {
-      const tagMatch = lines[li].match(/(?:^|\s)(LUL|UL)\s*(.*)$/);
+      const tagMatch = lines[li].match(/(?:^|\s)(LUL|UL)\b\s*(.*)$/);
       if (!tagMatch) continue;
       let restOfLine = tagMatch[2].trim();
 
