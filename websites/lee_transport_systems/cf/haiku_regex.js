@@ -4,9 +4,18 @@ import { base64FromArrayBuffer } from "./base64.js";
 // real photos via the haiku_regex sandbox before deciding if a regex-only parser can
 // replace EXTRACTION_SCHEMA in haiku_frame.js. Separate route on purpose, so
 // /api/ocr-frame itself is untouched.
-const RAW_TRANSCRIPTION_PROMPT = `Transcribe every piece of text visible in this photo, exactly as printed. If the photo itself is rotated or sideways, read the text as if it were upright — describe what the text says, not how the photo is oriented.
+const RAW_TRANSCRIPTION_PROMPT = `Transcribe every piece of text visible in this photo, exactly as printed. If the photo itself is rotated or sideways, read the text as if it were upright — transcribe what the text says, not how the photo is oriented.
 
-Output only the raw transcribed text, in the order you read it off the page, as plain running text. Do not add extra spaces, indentation, or blank lines to represent where words are positioned on the page — use only normal single spaces and line breaks, the same as you would to write out what the page says as continuous text. No commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;
+Scan the page like a raster scan: start at the top-left corner, read across to the right, then move down to the next line and read left to right again, continuing top to bottom until you reach the bottom-right corner. Follow this strict top-to-bottom, left-to-right order regardless of columns, tables, boxes, or how the content is visually grouped — do not reorder text by meaning, category, or relationship between fields.
+
+Transcribe every distinct piece of text you see, including short codes, abbreviations, and acronyms as short as two or three letters, even if they appear isolated, small, faint, stamped, or repeated elsewhere on the page. Never omit, merge, or paraphrase any text based on your own judgment of what is important — every printed character group must appear in your output exactly as printed.
+
+Output only the raw transcribed text, as plain running text, in the order described above. Do not add extra spaces, indentation, or blank lines to represent where words are positioned on the page — use only normal single spaces and line breaks, the same as you would to write out what the page says as continuous text. No commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;
+
+// This prompt was working 99.99% correct. The issue was that it was sometimes dropping the "LUL" tag.
+// const RAW_TRANSCRIPTION_PROMPT = `Transcribe every piece of text visible in this photo, exactly as printed. If the photo itself is rotated or sideways, read the text as if it were upright — describe what the text says, not how the photo is oriented.
+
+// Output only the raw transcribed text, in the order you read it off the page, as plain running text. Do not add extra spaces, indentation, or blank lines to represent where words are positioned on the page — use only normal single spaces and line breaks, the same as you would to write out what the page says as continuous text. No commentary, no markdown, no JSON, no labels or structure beyond what's already printed on the page itself.`;
 
 export async function handleOcrRaw(request, env) {
   if (!env.ANTHROPIC_API_KEY) {
@@ -37,6 +46,7 @@ export async function handleOcrRaw(request, env) {
     body: JSON.stringify({
       model: "claude-haiku-4-5",
       max_tokens: 8192,
+      temperature: 0,
       messages: [
         {
           role: "user",
