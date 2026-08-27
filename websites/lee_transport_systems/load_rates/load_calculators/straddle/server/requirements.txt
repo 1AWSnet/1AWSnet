@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-multipart
+
+# CPU wheel by default. If you have a CUDA GPU and want it used, replace this line --
+# see https://www.paddlepaddle.org.cn/en/install/quick for the matching GPU wheel/index
+# for your CUDA version, since that install command isn't a plain requirements.txt entry.
+#
+# Pinned to 3.2.2, not latest: 3.3.0+ has a confirmed regression that crashes CPU
+# inference with "NotImplementedError: ConvertPirAttribute2RuntimeAttribute not support
+# [pir::ArrayAttribute<pir::DoubleAttribute>]" during layout detection (PaddlePaddle/Paddle#77340).
+# Safe to bump once that's fixed upstream.
+paddlepaddle==3.2.2
+
+paddleocr

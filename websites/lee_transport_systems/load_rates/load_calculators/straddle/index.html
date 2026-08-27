@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Straddle</title>
+<link rel="stylesheet" href="../../../css/style.css">
+<script src="../../../js/theme.js"></script>
+<script src="../../../js/header.js"></script>
+</head>
+<body class="centered-page">
+
+<script>renderSiteHeader('../../../');</script>
+
+<div class="page">
+<h1>🛶 Straddle 🛶</h1>
+<p class="sub">PaddleOCR's PP-StructureV3 pipeline, run locally -- see server/app.py.</p>
+
+<div class="controls stacked">
+<label class="tab-btn" for="photo">Choose File</label>
+<input type="file" id="photo" accept="image/*" class="visually-hidden">
+<span id="fileName" class="file-name">No file selected</span>
+<button id="upload">Upload &amp; extract</button>
+</div>
+
+<div id="status"></div>
+
+<div id="continuation" style="display: none;">
+  <p>This page doesn't appear to reach the end of the report (no "Start Mileage" / "End Mileage" / "Total Mileage" / "Total Fuel" found). Is there a second page?</p>
+  <button id="continuationYes" type="button">Yes, submit a second page</button>
+  <button id="continuationNo" type="button">No, this is the whole report</button>
+
+  <div id="secondPageControls" style="display: none;">
+    <div class="controls stacked">
+      <label class="tab-btn" for="secondPagePhoto">Choose Page 2 File</label>
+      <input type="file" id="secondPagePhoto" accept="image/*" class="visually-hidden">
+      <span id="secondPageFileName" class="file-name">No file selected</span>
+      <button id="secondPageUpload">Upload &amp; append</button>
+    </div>
+  </div>
+</div>
+
+<table id="tripsTable">
+  <thead>
+    <tr><th>Trip &amp;<br>Order #</th><th>Origin</th><th>Destination</th><th>Rate</th></tr>
+  </thead>
+  <tbody id="tripsBody"></tbody>
+</table>
+<div id="summary"></div>
+
+<details id="rawDetails" style="display: none;">
+  <summary>PP-StructureV3 text lines <button id="copyRaw" type="button">Copy</button></summary>
+  <pre id="result"></pre>
+</details>
+
+<details id="previewDetails" style="display: none;">
+  <summary>What was actually sent to the pipeline</summary>
+  <img id="normalizedPreview" style="max-width: 100%;">
+</details>
+
+</div>
+
+<script src="../../settlement_tariff/js/data.js"></script>
+<script src="js/terminals.js"></script>
+<script src="js/structure.js"></script>
+<script src="js/dom-helpers.js"></script>
+<script src="js/parse-rec-texts.js"></script>
+<script src="js/render.js"></script>
+<script src="js/upload.js"></script>
+
+</body>
+</html>
