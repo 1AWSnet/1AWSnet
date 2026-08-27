@@ -24,6 +24,7 @@ const TARIFFS = [CT_TARIFF, NE_TARIFF];
 const CITY_MISREADS = {
   bradford: 'Branford', // OCR misread of Branford (drops the "n")
   enfied: 'Enfield', // PP-StructureV3 misread of Enfield (drops the "l")
+  betny: 'Bethany', // PP-StructureV3 misread of Bethany (drops the "ha")
 };
 
 // LLD/LUL addresses are always printed as "Street, City, ST" — the tariff only keys

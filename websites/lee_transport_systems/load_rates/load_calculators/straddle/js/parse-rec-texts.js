@@ -137,14 +137,22 @@ function parseRecTextsToRows(recTexts) {
       // Case-insensitive: PP-StructureV3 sometimes reads the tag itself with scrambled
       // case (e.g. "Lul" instead of "LUL") -- the same per-character case uncertainty
       // seen in city names, just landing on the tag this time.
-      const tagMatch = lines[li].match(/(?:^|\s)(LUL|UL)\b\s*(.*)$/i);
+      //
+      // Leading boundary is "not preceded by a letter" rather than "start of line or
+      // whitespace" -- a sequence number sometimes glues directly onto the tag with no
+      // space at all (e.g. "2LUL"), which a \s/start-of-line requirement would miss
+      // entirely, silently dropping that row's whole address. Digits, punctuation, and
+      // start-of-string are all fine to precede it; only a letter isn't (that's what
+      // keeps this from matching "UL" inside "ULTRA" or "SULFUR" -- see findAddressWithSpan's
+      // trailing \b for the other half of that same guard).
+      const tagMatch = lines[li].match(/(?<![A-Za-z])(LUL|UL)\b\s*(.*)$/i);
       if (!tagMatch) continue;
 
       const candidateLines = [];
       for (let lj = li + 1; lj < lines.length; lj++) {
         const line = lines[lj].trim();
         if (!line) continue;
-        if (/\b(LUL|UL)\b/i.test(line) || findTerminal(line)) break;
+        if (/(?<![A-Za-z])(LUL|UL)\b/i.test(line) || findTerminal(line)) break;
         if (looksLikeNonNameLine(line)) continue;
         candidateLines.push(line);
       }
