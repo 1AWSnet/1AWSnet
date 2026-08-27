@@ -1,9 +1,9 @@
 // Converts Haiku's raw, unstructured OCR text (from /api/ocr-regex) into the same
 // {date, driverName, rows: [...]} shape worker.js's EXTRACTION_SCHEMA produces, so it
 // can be fed straight into the existing, unmodified structureOcrResult() from
-// ../haiku_shared_js/structure.js -- all the trip pairing / city-state parsing / tariff lookup /
+// ../../haiku_shared_js/structure.js -- all the trip pairing / city-state parsing / tariff lookup /
 // terminal lookup logic there is reused as-is, nothing about it changes for this path.
-// Depends on findTerminal from ../haiku_shared_js/terminals.js (loaded before this
+// Depends on findTerminal from ../../haiku_shared_js/terminals.js (loaded before this
 // script): LLD rows are found by matching a known terminal name directly, rather than
 // by reading the "LLD" tag OCR misreads inconsistently (see parseRawTextToRows below).
 //
