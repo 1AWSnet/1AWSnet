@@ -40,15 +40,6 @@ List one entry per row that is explicitly tagged "LLD" or "LUL" in the left marg
 Do not create an entry for a row with no "LLD"/"LUL" tag — a Trip block can contain a dispatch note for the driver (e.g. a bare product/quantity line like "2500 DIESEL") that is not an address and must be skipped entirely. Do not try to match or pair rows with each other — just report each tagged row's own trip number, type, and fields exactly as printed on that row; nothing else needs to be inferred.`;
 
 export async function handleOcr(request, env) {
-  // Fails fast with a clear message instead of letting Anthropic's own auth error
-  // (still caught below regardless) be the first sign something's misconfigured.
-  if (!env.ANTHROPIC_API_KEY) {
-    return new Response(JSON.stringify({ error: "Server is not configured with an API key." }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
   // Rejects an obviously-wrong upload before spending an API call on it.
   const contentType = request.headers.get("content-type") || "";
   if (!contentType.startsWith("image/")) {
@@ -58,7 +49,22 @@ export async function handleOcr(request, env) {
     });
   }
 
-  const imageBuffer = await request.arrayBuffer();
+  return runHaikuOcr(await request.arrayBuffer(), contentType, env);
+}
+
+// The Anthropic call itself, split out from handleOcr so the Straddle route (straddle.js)
+// can reuse it as its fallback -- by then it already holds the image bytes and has no
+// Request to hand over.
+export async function runHaikuOcr(imageBuffer, contentType, env) {
+  // Fails fast with a clear message instead of letting Anthropic's own auth error
+  // (still caught below regardless) be the first sign something's misconfigured.
+  if (!env.ANTHROPIC_API_KEY) {
+    return new Response(JSON.stringify({ error: "Server is not configured with an API key." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const base64Image = base64FromArrayBuffer(imageBuffer);
 
   const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {

@@ -4,15 +4,14 @@
 // structureOcrResult / renderTrips (structure.js, render.js) -- all this folder's own
 // forks, loaded before this script.
 //
-// Unlike the Haiku pages, this doesn't POST to a Cloudflare Worker route -- PP-StructureV3
-// needs Python + paddlepaddle, which the Worker runtime (cf/) can't run. It POSTs
-// straight to the local FastAPI service in server/app.py instead.
-//
-// Hardcoded to this dev machine's LAN IP rather than "localhost" -- this page is served
-// over the LAN via Live Server so it can be opened from a phone, and on a phone
-// "localhost" would mean the phone itself, not the machine running server/app.py.
-// TODO: replace with a real hostname/URL before this goes into production.
-const STRADDLE_ENDPOINT = 'http://192.168.8.161:8000/structure';
+// POSTs the orientation-normalized image (raw body, Content-Type: image/*) to the
+// Worker route /api/straddle-ocr (cf/straddle.js). That route forwards to a GPU
+// PaddleOCR box over a Cloudflare Tunnel and falls back to Haiku when the box is down.
+// The two engines answer in different shapes: the box returns {pages:[{lines:[...]}]},
+// Haiku returns {date,driverName,rows:[...]}. callStraddle below normalizes both to the
+// {date,driverName,rows} shape structureOcrResult() wants -- parseRecTextsToRows does
+// that conversion for the box's raw lines, Haiku's response already is that shape.
+const STRADDLE_ENDPOINT = '/api/straddle-ocr';
 
 // Any of these appearing means the page's own bottom section (drivers' totals) was
 // reached, so there's nothing more of this report on a further page.
@@ -40,18 +39,29 @@ let accumulatedRows = [];
 let accumulatedDate = '';
 let accumulatedDriverName = '';
 
+// Returns { parsed, rawLines, engine }:
+//   parsed   - always the {date, driverName, rows} shape structureOcrResult() consumes
+//   rawLines - the OCR line list when the GPU box answered, else null (Haiku fallback,
+//              which has no raw lines -- only structured rows)
+//   engine   - 'cuda' | 'haiku' | 'unknown', from the X-OCR-Engine response header
 async function callStraddle(file) {
   const normalized = await normalizeOrientation(file);
   normalizedPreview.src = URL.createObjectURL(normalized);
   previewDetails.style.display = 'block';
 
-  const formData = new FormData();
-  formData.append('file', normalized, file.name || 'photo.jpg');
-
-  const response = await fetch(STRADDLE_ENDPOINT, { method: 'POST', body: formData });
+  const response = await fetch(STRADDLE_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': normalized.type || 'image/jpeg' },
+    body: normalized,
+  });
   const text = await response.text();
   if (!response.ok) throw new Error(text);
-  return JSON.parse(text);
+
+  const data = JSON.parse(text);
+  const engine = response.headers.get('X-OCR-Engine') || 'unknown';
+  const rawLines = data.pages ? data.pages[0].lines : null;
+  const parsed = rawLines ? parseRecTextsToRows(rawLines) : data;
+  return { parsed, rawLines, engine };
 }
 
 function renderAccumulated() {
@@ -79,20 +89,24 @@ document.getElementById('upload').addEventListener('click', async () => {
   accumulatedDriverName = '';
 
   try {
-    const data = await callStraddle(file);
+    const { parsed, rawLines } = await callStraddle(file);
     stopUploadCounter();
 
-    const lines = data.pages[0].lines;
-    resultEl.textContent = JSON.stringify(lines, null, 2);
+    resultEl.textContent = rawLines
+      ? JSON.stringify(rawLines, null, 2)
+      : JSON.stringify(parsed, null, 2);
     rawDetails.style.display = 'block';
 
-    const parsed = parseRecTextsToRows(lines);
     accumulatedRows = parsed.rows;
     accumulatedDate = parsed.date;
     accumulatedDriverName = parsed.driverName;
     renderAccumulated();
 
-    if (END_OF_PAGE_RE.test(lines.join(' '))) {
+    if (!rawLines) {
+      // Haiku fallback: its schema only covers LLD/LUL rows, never the totals section,
+      // so there's no way to tell whether the page was complete -- don't guess.
+      statusEl.textContent = 'Done (Haiku fallback -- the OCR box was unreachable).';
+    } else if (END_OF_PAGE_RE.test(rawLines.join(' '))) {
       statusEl.textContent = 'Done.';
     } else {
       statusEl.textContent = 'Done -- but this page doesn\'t look complete.';
@@ -100,7 +114,7 @@ document.getElementById('upload').addEventListener('click', async () => {
     }
   } catch (err) {
     stopUploadCounter();
-    statusEl.textContent = 'Request failed. Is server/app.py running?';
+    statusEl.textContent = 'Request failed.';
     resultEl.textContent = String(err);
     rawDetails.style.display = 'block';
   }
@@ -124,11 +138,8 @@ secondPageUploadBtn.addEventListener('click', async () => {
   startUploadCounter(statusEl);
 
   try {
-    const data = await callStraddle(file);
+    const { parsed, rawLines } = await callStraddle(file);
     stopUploadCounter();
-
-    const lines = data.pages[0].lines;
-    const parsed = parseRecTextsToRows(lines);
 
     // Renumbers the second page's trips to continue after the first page's, rather
     // than colliding with them -- groupRowsIntoTrips (structure.js) groups purely by
@@ -139,7 +150,11 @@ secondPageUploadBtn.addEventListener('click', async () => {
     accumulatedRows = accumulatedRows.concat(offsetRows);
     renderAccumulated();
 
-    if (END_OF_PAGE_RE.test(lines.join(' '))) {
+    if (!rawLines) {
+      statusEl.textContent = 'Added page 2 (Haiku fallback).';
+      continuationEl.style.display = 'none';
+      secondPageControls.style.display = 'none';
+    } else if (END_OF_PAGE_RE.test(rawLines.join(' '))) {
       statusEl.textContent = 'Done (2 pages).';
       continuationEl.style.display = 'none';
       secondPageControls.style.display = 'none';

@@ -1,11 +1,13 @@
-# Local OCR service for the Straddle sandbox (../index.html + ../js/upload.js).
+# OCR service for the Straddle calculator (../index.html + ../js/upload.js).
 #
-# Not part of the Cloudflare deploy: this needs Python + paddlepaddle, which the
-# Cloudflare Worker (../../../../cf/) can't run -- that's a JS-only edge runtime.
-# Run this separately:
-#   pip install -r requirements.txt
-#   uvicorn app:app --host 0.0.0.0 --port 8000
-# then point ../js/upload.js's STRADDLE_ENDPOINT at wherever it ends up reachable.
+# Runs separately from the Cloudflare deploy: this needs Python + paddlepaddle on a GPU,
+# which the Worker (../../../../cf/) can't run -- that's a JS-only edge runtime. In
+# production the browser POSTs to the Worker route /api/straddle-ocr (cf/straddle.js),
+# which forwards the image here over a Cloudflare Tunnel with an X-Straddle-Secret header,
+# and falls back to Haiku if this box doesn't answer. Run it with:
+#   pip install -r requirements.txt          # plus the GPU paddlepaddle wheel -- see that file
+#   STRADDLE_OCR_SECRET=... uvicorn app:app --host 127.0.0.1 --port 8000
+# The secret is optional for LAN dev (the header check is skipped when it's unset).
 #
 # Uses the plain PaddleOCR pipeline (detection + recognition only), not PP-StructureV3 --
 # PP-StructureV3's layout-detection step first decides which regions of the page are
@@ -41,10 +43,15 @@ os.environ.setdefault("PADDLE_PDX_CPU_NUM_THREADS", "4")
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, Request, UploadFile
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from paddleocr import PaddleOCR
+
+# Set in production (the Cloudflare Worker sends the matching X-Straddle-Secret header);
+# left unset for LAN dev, where the check below is skipped. Gates the pipeline so a
+# request that reaches the tunnel hostname directly can't drive it without the secret.
+STRADDLE_SECRET = os.environ.get("STRADDLE_OCR_SECRET")
 
 # Longest side to downscale a photo to before it ever reaches the pipeline. Benchmarked
 # against a real Driver Summary Report photo (3024x4032 native): downscaling to 1500px
@@ -165,14 +172,22 @@ def run_pipeline(image_path: Path):
 
 
 @app.post("/structure")
-async def structure(file: UploadFile = File(...)):
+async def structure(request: Request):
+    if STRADDLE_SECRET and request.headers.get("x-straddle-secret") != STRADDLE_SECRET:
+        return JSONResponse(status_code=401, content={"error": "missing or bad X-Straddle-Secret"})
+
+    # Raw image bytes as the request body (Content-Type: image/*), not multipart form
+    # data -- the Worker forwards exactly what the browser sent it, which is now the
+    # orientation-normalized blob straight in the body.
+    body = await request.body()
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir_path = Path(tmp_dir)
         # Always .jpg regardless of what was uploaded -- preprocess_image re-encodes
         # the (resized, binarized) result as JPEG itself, so the original extension no
         # longer describes what's actually being written here.
         image_path = tmp_dir_path / "input.jpg"
-        image_path.write_bytes(preprocess_image(await file.read()))
+        image_path.write_bytes(preprocess_image(body))
 
         output_dir = tmp_dir_path / "output"
         for res in run_pipeline(image_path):
