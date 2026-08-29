@@ -53,16 +53,14 @@ from paddleocr import PaddleOCR
 # request that reaches the tunnel hostname directly can't drive it without the secret.
 STRADDLE_SECRET = os.environ.get("STRADDLE_OCR_SECRET")
 
-# Downscaling to 1500px on the long side was benchmarked against a real Driver Summary
-# Report photo (3024x4032 native): it cut pipeline time from ~22s to ~8s with zero loss
-# of real page content -- every terminal name, delivery address, and the Start/End/Total
-# Mileage section still came through. 700px was too aggressive (the mileage totals
-# started dropping out). Downscaling AND adaptive-threshold binarization now both happen
-# in the browser (js/dom-helpers.js's preprocessImage) -- once the box moved behind a
-# Cloudflare Tunnel, shipping the full photo here just to shrink it was most of the
-# round trip. So a normal upload arrives already <=1500px and black-on-white and is
-# written to disk unchanged.
-MAX_LONG_SIDE = 1500
+# Downscaling AND adaptive-threshold binarization both happen in the browser now
+# (js/dom-helpers.js's preprocessImage) -- once the box moved behind a Cloudflare Tunnel,
+# shipping the full photo here just to shrink it was most of the round trip. A normal
+# upload arrives already <=MAX_LONG_SIDE and black-on-white and is written to disk
+# unchanged. This value is kept in sync with dom-helpers.js: it started at 1500 but that
+# lost thin strokes on real photos once the sharp server-side Lanczos downscale was gone,
+# so both sides went to 2000.
+MAX_LONG_SIDE = 2000
 
 # A downscaled, binarized PNG from the page is comfortably under this. Anything bigger
 # didn't come from preprocessImage (a direct API call, or the page's JS failing), so

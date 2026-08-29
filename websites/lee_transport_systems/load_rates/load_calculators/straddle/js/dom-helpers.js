@@ -36,16 +36,18 @@ function makeTripOrderCell(tripNumber, orderNumber) {
 // fix EXIF orientation, downscale so the long side is MAX_LONG_SIDE, then adaptive-
 // threshold binarize. This runs here rather than on the box because the box is now
 // remote (over a Cloudflare Tunnel): shipping the full ~3MB phone photo there and
-// letting it shrink the image was most of the round trip. After this the upload is
-// ~150KB. Whatever this returns is byte-for-byte what the pipeline sees -- upload.js
-// puts it straight into the page's "What was actually sent to the pipeline" preview.
+// letting it shrink the image was most of the round trip. After this the upload is a
+// few hundred KB. Whatever this returns is byte-for-byte what the pipeline sees --
+// upload.js puts it straight into the "What was actually sent to the pipeline" preview.
 //
 // Orientation: phone photos carry an EXIF orientation tag browsers honor when displaying
 // the image (so it looks upright to the driver) but the OCR pipeline does not -- it
 // reads raw pixel orientation. Drawing through <img> + canvas bakes in the orientation
 // the browser applied and drops the tag, so what's uploaded is always upright.
-const MAX_LONG_SIDE = 1500;
-const ADAPTIVE_BLOCK = 35; // local-mean window (odd); the value app.py passed to OpenCV
+//
+// MAX_LONG_SIDE / ADAPTIVE_BLOCK / ADAPTIVE_C are kept in sync with app.py's guard.
+const MAX_LONG_SIDE = 2000;
+const ADAPTIVE_BLOCK = 45; // local-mean window (odd); scaled up together with MAX_LONG_SIDE
 const ADAPTIVE_C = 15;     // subtracted from the local mean before thresholding
 
 async function preprocessImage(file) {
@@ -67,16 +69,8 @@ async function preprocessImage(file) {
       height = Math.round(height * scale);
     }
 
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
+    const canvas = drawDownscaled(img, width, height);
     const ctx = canvas.getContext('2d');
-    // Scales straight from the decoded image to the smaller target -- no full-res
-    // canvas is ever allocated. 'high' quality keeps small text legible through a big
-    // downscale (a ~4000px photo to 1500px).
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, 0, 0, width, height);
 
     const imageData = ctx.getImageData(0, 0, width, height);
     binarizeInPlace(imageData);
@@ -90,6 +84,35 @@ async function preprocessImage(file) {
   }
 }
 
+// Downscale in repeated halving steps rather than one jump. The canvas resampler does a
+// good job at ~2x but blurs and aliases thin text at large ratios -- a ~4000px phone
+// photo taken straight to the target lost strokes and OCR got noticeably worse. Halving
+// until within 2x of the target, then a final resize, keeps edges sharp, close to the
+// INTER_LANCZOS4 downscale app.py used to do. Returns a canvas at exactly targetW x
+// targetH so getImageData can read it directly.
+function drawDownscaled(img, targetW, targetH) {
+  let cur = img;
+  let curW = img.naturalWidth;
+  let curH = img.naturalHeight;
+  while (curW > targetW * 2) {
+    curW = Math.round(curW / 2);
+    curH = Math.round(curH / 2);
+    cur = resizeTo(cur, curW, curH);
+  }
+  return resizeTo(cur, targetW, targetH);
+}
+
+function resizeTo(src, w, h) {
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(src, 0, 0, w, h);
+  return canvas;
+}
+
 // Adaptive-threshold binarization (OpenCV's adaptiveThreshold + THRESH_BINARY): a pixel
 // goes white if its grey value exceeds (local mean - ADAPTIVE_C), else black. The local
 // mean is a box average over an ADAPTIVE_BLOCK-square window, via a separable sliding-
@@ -100,7 +123,10 @@ function binarizeInPlace(imageData) {
   const { data, width, height } = imageData;
   const n = width * height;
 
-  const grey = new Float64Array(n);
+  // Float32, not Float64: a 2000px image is ~3M pixels and this runs on phones -- half
+  // the memory, and the local-mean sums (a few thousand values <= 255) stay well inside
+  // Float32's exact-integer range.
+  const grey = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const o = i * 4;
     grey[i] = 0.299 * data[o] + 0.587 * data[o + 1] + 0.114 * data[o + 2];
@@ -120,8 +146,8 @@ function binarizeInPlace(imageData) {
 // keeping a running sum of the [i-radius, i+radius] window; edge pixels divide by the
 // clamped window size so borders aren't pulled toward zero.
 function boxBlur(src, width, height, radius) {
-  const tmp = new Float64Array(src.length);
-  const out = new Float64Array(src.length);
+  const tmp = new Float32Array(src.length);
+  const out = new Float32Array(src.length);
   for (let y = 0; y < height; y++) blurLine(src, tmp, width, 1, y * width, radius);
   for (let x = 0; x < width; x++) blurLine(tmp, out, height, width, x, radius);
   return out;
