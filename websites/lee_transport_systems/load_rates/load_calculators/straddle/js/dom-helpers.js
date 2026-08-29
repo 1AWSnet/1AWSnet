@@ -32,13 +32,23 @@ function makeTripOrderCell(tripNumber, orderNumber) {
   return td;
 }
 
-// Phone photos carry an EXIF orientation tag that browsers honor when displaying
-// the image (so it looks upright to the driver) but that the OCR pipeline does not --
-// it reads raw pixel orientation, so a sideways-tagged photo arrives sideways and is
-// much more error-prone to extract from. Drawing through <img> + canvas bakes in the
-// correct orientation (browsers apply the EXIF hint during decode/draw) and the canvas
-// output has no orientation tag, so what gets uploaded is always upright.
-async function normalizeOrientation(file) {
+// Client-side image preprocessing -- mirrors server/app.py's old preprocess_image():
+// fix EXIF orientation, downscale so the long side is MAX_LONG_SIDE, then adaptive-
+// threshold binarize. This runs here rather than on the box because the box is now
+// remote (over a Cloudflare Tunnel): shipping the full ~3MB phone photo there and
+// letting it shrink the image was most of the round trip. After this the upload is
+// ~150KB. Whatever this returns is byte-for-byte what the pipeline sees -- upload.js
+// puts it straight into the page's "What was actually sent to the pipeline" preview.
+//
+// Orientation: phone photos carry an EXIF orientation tag browsers honor when displaying
+// the image (so it looks upright to the driver) but the OCR pipeline does not -- it
+// reads raw pixel orientation. Drawing through <img> + canvas bakes in the orientation
+// the browser applied and drops the tag, so what's uploaded is always upright.
+const MAX_LONG_SIDE = 1500;
+const ADAPTIVE_BLOCK = 35; // local-mean window (odd); the value app.py passed to OpenCV
+const ADAPTIVE_C = 15;     // subtracted from the local mean before thresholding
+
+async function preprocessImage(file) {
   const objectUrl = URL.createObjectURL(file);
   try {
     const img = await new Promise((resolve, reject) => {
@@ -48,14 +58,89 @@ async function normalizeOrientation(file) {
       image.src = objectUrl;
     });
 
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    canvas.getContext('2d').drawImage(img, 0, 0);
+    let width = img.naturalWidth;
+    let height = img.naturalHeight;
+    const longSide = Math.max(width, height);
+    if (longSide > MAX_LONG_SIDE) {
+      const scale = MAX_LONG_SIDE / longSide;
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
 
-    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    // Scales straight from the decoded image to the smaller target -- no full-res
+    // canvas is ever allocated. 'high' quality keeps small text legible through a big
+    // downscale (a ~4000px photo to 1500px).
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const imageData = ctx.getImageData(0, 0, width, height);
+    binarizeInPlace(imageData);
+    ctx.putImageData(imageData, 0, 0);
+
+    // PNG, not JPEG: the output is 2-value black-on-white, which PNG stores losslessly,
+    // smaller than the equivalent JPEG, and with no ringing along the text edges.
+    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
   } finally {
     URL.revokeObjectURL(objectUrl);
+  }
+}
+
+// Adaptive-threshold binarization (OpenCV's adaptiveThreshold + THRESH_BINARY): a pixel
+// goes white if its grey value exceeds (local mean - ADAPTIVE_C), else black. The local
+// mean is a box average over an ADAPTIVE_BLOCK-square window, via a separable sliding-
+// window sum so cost doesn't grow with window size. app.py used the Gaussian-weighted
+// variant; a flat box mean is a close, much shorter approximation for a page scan.
+// Rewrites the RGBA data in place: R=G=B set to 0 or 255, A left at 255.
+function binarizeInPlace(imageData) {
+  const { data, width, height } = imageData;
+  const n = width * height;
+
+  const grey = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const o = i * 4;
+    grey[i] = 0.299 * data[o] + 0.587 * data[o + 1] + 0.114 * data[o + 2];
+  }
+
+  const mean = boxBlur(grey, width, height, (ADAPTIVE_BLOCK - 1) / 2);
+
+  for (let i = 0; i < n; i++) {
+    const v = grey[i] > mean[i] - ADAPTIVE_C ? 255 : 0;
+    const o = i * 4;
+    data[o] = data[o + 1] = data[o + 2] = v;
+    data[o + 3] = 255;
+  }
+}
+
+// Separable box blur. blurLine walks one row (stride 1) or one column (stride `width`)
+// keeping a running sum of the [i-radius, i+radius] window; edge pixels divide by the
+// clamped window size so borders aren't pulled toward zero.
+function boxBlur(src, width, height, radius) {
+  const tmp = new Float64Array(src.length);
+  const out = new Float64Array(src.length);
+  for (let y = 0; y < height; y++) blurLine(src, tmp, width, 1, y * width, radius);
+  for (let x = 0; x < width; x++) blurLine(tmp, out, height, width, x, radius);
+  return out;
+}
+
+function blurLine(src, dst, len, stride, base, radius) {
+  let sum = 0;
+  const first = Math.min(radius, len - 1);
+  for (let k = 0; k <= first; k++) sum += src[base + k * stride];
+
+  for (let i = 0; i < len; i++) {
+    const lo = i - radius < 0 ? 0 : i - radius;
+    const hi = i + radius > len - 1 ? len - 1 : i + radius;
+    dst[base + i * stride] = sum / (hi - lo + 1);
+
+    const drop = i - radius;
+    const add = i + radius + 1;
+    if (drop >= 0) sum -= src[base + drop * stride];
+    if (add <= len - 1) sum += src[base + add * stride];
   }
 }
 

@@ -53,42 +53,44 @@ from paddleocr import PaddleOCR
 # request that reaches the tunnel hostname directly can't drive it without the secret.
 STRADDLE_SECRET = os.environ.get("STRADDLE_OCR_SECRET")
 
-# Longest side to downscale a photo to before it ever reaches the pipeline. Benchmarked
-# against a real Driver Summary Report photo (3024x4032 native): downscaling to 1500px
-# cut pipeline time from ~22s to ~8s with zero loss of any real page content: every
-# terminal name, delivery address, and the Start/End/Total Mileage section still came
-# through correctly. 700px was tested and found to be too aggressive -- the mileage
-# totals section started dropping out entirely. 1500px has only been validated on one
-# relatively clean photo, not yet against denser/harder ones (heavy handwriting, crowded
-# rows) -- keep an eye on those specifically until that's confirmed too.
+# Downscaling to 1500px on the long side was benchmarked against a real Driver Summary
+# Report photo (3024x4032 native): it cut pipeline time from ~22s to ~8s with zero loss
+# of real page content -- every terminal name, delivery address, and the Start/End/Total
+# Mileage section still came through. 700px was too aggressive (the mileage totals
+# started dropping out). Downscaling AND adaptive-threshold binarization now both happen
+# in the browser (js/dom-helpers.js's preprocessImage) -- once the box moved behind a
+# Cloudflare Tunnel, shipping the full photo here just to shrink it was most of the
+# round trip. So a normal upload arrives already <=1500px and black-on-white and is
+# written to disk unchanged.
 MAX_LONG_SIDE = 1500
 
+# A downscaled, binarized PNG from the page is comfortably under this. Anything bigger
+# didn't come from preprocessImage (a direct API call, or the page's JS failing), so
+# it's worth a decode to check the dimensions.
+GUARD_MAX_BYTES = 1_500_000
 
-# Binarizing (adaptive threshold, not a flat cutoff -- handles uneven lighting across the
-# page better than a single global threshold would) at this same resolution shaves off
-# roughly another 13% of file size for the same speed and same accuracy, benchmarked
-# against the same photo. Doing it at a HIGHER resolution instead of downscaling doesn't
-# help -- that was tested too and comes out both bigger and slower than just downscaling
-# to MAX_LONG_SIDE directly, so this always runs after the resize, never as a substitute
-# for it.
-def preprocess_image(image_bytes: bytes) -> bytes:
+
+# Backstop only: shrink an oversized image so it can't waste GPU memory, but never
+# binarize -- running adaptive threshold on an already-binary image eats thin strokes.
+def guard_downscale(image_bytes: bytes) -> bytes:
+    if len(image_bytes) < GUARD_MAX_BYTES:
+        return image_bytes
+
     array = np.frombuffer(image_bytes, dtype=np.uint8)
     img = cv2.imdecode(array, cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError("uploaded bytes are not a decodable image")
 
     long_side = max(img.shape[:2])
-    if long_side > MAX_LONG_SIDE:
-        scale = MAX_LONG_SIDE / long_side
-        new_size = (round(img.shape[1] * scale), round(img.shape[0] * scale))
-        img = cv2.resize(img, new_size, interpolation=cv2.INTER_LANCZOS4)
+    if long_side <= MAX_LONG_SIDE:
+        return image_bytes
 
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    binarized = cv2.adaptiveThreshold(
-        gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 35, 15
-    )
-
-    ok, encoded = cv2.imencode(".jpg", binarized, [cv2.IMWRITE_JPEG_QUALITY, 92])
+    scale = MAX_LONG_SIDE / long_side
+    new_size = (round(img.shape[1] * scale), round(img.shape[0] * scale))
+    img = cv2.resize(img, new_size, interpolation=cv2.INTER_AREA)
+    ok, encoded = cv2.imencode(".png", img)
     if not ok:
-        raise ValueError("Failed to encode preprocessed image")
+        raise ValueError("failed to re-encode oversized image")
     return encoded.tobytes()
 
 app = FastAPI()
@@ -177,17 +179,16 @@ async def structure(request: Request):
         return JSONResponse(status_code=401, content={"error": "missing or bad X-Straddle-Secret"})
 
     # Raw image bytes as the request body (Content-Type: image/*), not multipart form
-    # data -- the Worker forwards exactly what the browser sent it, which is now the
-    # orientation-normalized blob straight in the body.
+    # data -- the Worker forwards exactly what the browser sent it, which is the
+    # already-downscaled, binarized PNG from js/dom-helpers.js's preprocessImage.
     body = await request.body()
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir_path = Path(tmp_dir)
-        # Always .jpg regardless of what was uploaded -- preprocess_image re-encodes
-        # the (resized, binarized) result as JPEG itself, so the original extension no
-        # longer describes what's actually being written here.
-        image_path = tmp_dir_path / "input.jpg"
-        image_path.write_bytes(preprocess_image(body))
+        # .png to match what the page sends; guard_downscale is a no-op passthrough for
+        # it and only re-encodes (also as PNG) if some oversized image slipped through.
+        image_path = tmp_dir_path / "input.png"
+        image_path.write_bytes(guard_downscale(body))
 
         output_dir = tmp_dir_path / "output"
         for res in run_pipeline(image_path):

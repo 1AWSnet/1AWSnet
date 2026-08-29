@@ -1,6 +1,6 @@
 // Wires up straddle/index.html's upload flow. Depends on getOcrPageElements /
 // wireFileInput / wireCopyButton / startUploadCounter / stopUploadCounter /
-// normalizeOrientation (dom-helpers.js), parseRecTextsToRows (parse-rec-texts.js), and
+// preprocessImage (dom-helpers.js), parseRecTextsToRows (parse-rec-texts.js), and
 // structureOcrResult / renderTrips (structure.js, render.js) -- all this folder's own
 // forks, loaded before this script.
 //
@@ -45,14 +45,14 @@ let accumulatedDriverName = '';
 //              which has no raw lines -- only structured rows)
 //   engine   - 'cuda' | 'haiku' | 'unknown', from the X-OCR-Engine response header
 async function callStraddle(file) {
-  const normalized = await normalizeOrientation(file);
-  normalizedPreview.src = URL.createObjectURL(normalized);
+  const prepared = await preprocessImage(file);
+  normalizedPreview.src = URL.createObjectURL(prepared);
   previewDetails.style.display = 'block';
 
   const response = await fetch(STRADDLE_ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': normalized.type || 'image/jpeg' },
-    body: normalized,
+    headers: { 'Content-Type': prepared.type || 'image/png' },
+    body: prepared,
   });
   const text = await response.text();
   if (!response.ok) throw new Error(text);
