@@ -8,3 +8,11 @@ compatibility_date = "2026-08-05"
 # serves static files from root
 [assets]
 directory = ".."
+
+# Non-secret: just the public tunnel hostname the Straddle OCR route forwards to
+# (cf/straddle.js). Kept here rather than as a dashboard variable so every Workers Build
+# redeploys it -- a dashboard var got dropped on a rebuild once and the route silently
+# fell back to Haiku ("tunnel not configured"). The matching STRADDLE_OCR_SECRET stays a
+# dashboard secret (never in the repo).
+[vars]
+STRADDLE_OCR_URL = "https://straddle-ocr.1aws.net/structure"

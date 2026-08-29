@@ -13,9 +13,10 @@ import { runHaikuOcr } from "./haiku_frame.js";
 // which engine actually answered ("cuda" or "haiku") so the page, and a person in
 // devtools, can tell which path a given scan took.
 //
-// STRADDLE_OCR_URL and STRADDLE_OCR_SECRET are Cloudflare secrets (wrangler secret put),
-// never committed. While STRADDLE_OCR_URL is unset -- e.g. before the tunnel exists --
-// every request goes straight to Haiku, which is a safe default rather than an outage.
+// STRADDLE_OCR_URL is a plain var in wrangler.toml (just the public tunnel hostname);
+// STRADDLE_OCR_SECRET is a Cloudflare dashboard secret, never committed. If either is
+// missing every request goes straight to Haiku ("tunnel not configured") -- a safe
+// default rather than an outage, e.g. before the secret has been set.
 
 // The box does a full downscale + binarize + multi-model OCR pass per image; a warm GPU
 // run is ~2-3s, so this is generous headroom for a cold run or a dense page while still
