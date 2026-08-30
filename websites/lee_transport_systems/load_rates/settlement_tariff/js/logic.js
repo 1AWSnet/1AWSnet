@@ -1,7 +1,5 @@
+// Combined view: every CT (232) row plus every Maine-Mass-NH-RI (237) row.
 const COMBINED_TARIFF = {
-  combined: true,
-  number: `${CT_TARIFF.number} + ${NE_TARIFF.number}`,
-  name: "CT + MA & Others",
   rows: [...CT_TARIFF.rows, ...NE_TARIFF.rows],
 };
 
@@ -20,7 +18,6 @@ function switchTariff(i) {
 
 function toggleOldRate() {
   const on = document.getElementById('showOldRate').checked;
-  document.getElementById('oldRateLabel').textContent = `Old Rates = ${on ? 'On' : 'Off'}`;
   if (!on && sortCol === 2) {
     sortCol = 1;
     sortAsc = true;
@@ -43,16 +40,6 @@ function render() {
   const showOld = document.getElementById('showOldRate').checked;
   const originFilter = document.getElementById('originFilter').value.trim().toLowerCase();
   const destFilter = document.getElementById('destFilter').value.trim().toLowerCase();
-
-  if (tariff.combined) {
-    document.getElementById('tariffTitle').textContent = `Combined — ${tariff.name}`;
-    document.getElementById('tariffMeta').textContent =
-      `Tariff No ${CT_TARIFF.number} (${CT_TARIFF.name}) + Tariff No ${NE_TARIFF.number} (${NE_TARIFF.name})`;
-  } else {
-    document.getElementById('tariffTitle').textContent = `Tariff No ${tariff.number} — ${tariff.name}`;
-    document.getElementById('tariffMeta').textContent =
-      `Effective ${tariff.effective} – ${tariff.expiration} | Rates as of ${tariff.asOf} | New rates per Tariff #${tariff.newRatesTariff} as of ${tariff.newRatesAsOf}`;
-  }
 
   document.querySelector('th[data-col="2"]').style.display = showOld ? '' : 'none';
 
