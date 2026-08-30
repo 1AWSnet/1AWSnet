@@ -219,7 +219,16 @@ button, .tab-btn {
 .hamburger-btn:hover { border-color: var(--sky); }
 .tab-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
 
-.tabs { display: flex; justify-content: center; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+.tabs { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+
+/* Toggle switch */
+.switch-wrap { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; user-select: none; }
+.switch-wrap input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch-track { position: relative; width: 40px; height: 22px; border-radius: 999px; background: var(--border); border: 1px solid var(--input-border); transition: background .15s; flex-shrink: 0; }
+.switch-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: transform .15s; }
+.switch-wrap input:checked + .switch-track { background: var(--red); border-color: var(--red); }
+.switch-wrap input:checked + .switch-track .switch-thumb { transform: translateX(18px); background: #fff; }
+.switch-wrap input:focus-visible + .switch-track { outline: 2px solid var(--sky); outline-offset: 2px; }
 
 /* Forms */
 label { font-size: 14px; }

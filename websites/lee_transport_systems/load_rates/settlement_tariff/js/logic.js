@@ -1,5 +1,12 @@
-const TARIFFS = [CT_TARIFF, NE_TARIFF];
-let activeTariff = 0;
+const COMBINED_TARIFF = {
+  combined: true,
+  number: `${CT_TARIFF.number} + ${NE_TARIFF.number}`,
+  name: "CT + MA & Others",
+  rows: [...CT_TARIFF.rows, ...NE_TARIFF.rows],
+};
+
+const TARIFFS = [CT_TARIFF, NE_TARIFF, COMBINED_TARIFF];
+let activeTariff = 2;
 let sortCol = 1;
 let sortAsc = true;
 
@@ -8,6 +15,16 @@ function switchTariff(i) {
   sortCol = 1;
   sortAsc = true;
   document.querySelectorAll('.tab-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === i));
+  render();
+}
+
+function toggleOldRate() {
+  const on = document.getElementById('showOldRate').checked;
+  document.getElementById('oldRateLabel').textContent = `Old Rates = ${on ? 'On' : 'Off'}`;
+  if (!on && sortCol === 2) {
+    sortCol = 1;
+    sortAsc = true;
+  }
   render();
 }
 
@@ -23,12 +40,21 @@ function sortBy(col) {
 
 function render() {
   const tariff = TARIFFS[activeTariff];
+  const showOld = document.getElementById('showOldRate').checked;
   const originFilter = document.getElementById('originFilter').value.trim().toLowerCase();
   const destFilter = document.getElementById('destFilter').value.trim().toLowerCase();
 
-  document.getElementById('tariffTitle').textContent = `Tariff No ${tariff.number} — ${tariff.name}`;
-  document.getElementById('tariffMeta').textContent =
-    `Effective ${tariff.effective} – ${tariff.expiration} | Rates as of ${tariff.asOf} | New rates per Tariff #${tariff.newRatesTariff} as of ${tariff.newRatesAsOf}`;
+  if (tariff.combined) {
+    document.getElementById('tariffTitle').textContent = `Combined — ${tariff.name}`;
+    document.getElementById('tariffMeta').textContent =
+      `Tariff No ${CT_TARIFF.number} (${CT_TARIFF.name}) + Tariff No ${NE_TARIFF.number} (${NE_TARIFF.name})`;
+  } else {
+    document.getElementById('tariffTitle').textContent = `Tariff No ${tariff.number} — ${tariff.name}`;
+    document.getElementById('tariffMeta').textContent =
+      `Effective ${tariff.effective} – ${tariff.expiration} | Rates as of ${tariff.asOf} | New rates per Tariff #${tariff.newRatesTariff} as of ${tariff.newRatesAsOf}`;
+  }
+
+  document.querySelector('th[data-col="2"]').style.display = showOld ? '' : 'none';
 
   let rows = tariff.rows.filter(r =>
     r[0].toLowerCase().includes(originFilter) &&
@@ -51,10 +77,11 @@ function render() {
   for (const r of rows) {
     const [origin, dest, oldRate, newRate] = r;
     const tr = document.createElement('tr');
+    const oldCell = showOld ? `<td>$${oldRate.toFixed(2)}</td>` : '';
     tr.innerHTML = `
       <td>${origin}</td>
       <td>${dest}</td>
-      <td>$${oldRate.toFixed(2)}</td>
+      ${oldCell}
       <td>$${newRate.toFixed(2)}</td>
     `;
     tbody.appendChild(tr);
