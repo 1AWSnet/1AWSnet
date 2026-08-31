@@ -75,7 +75,42 @@ function render() {
   }
 
   document.getElementById('rowCount').textContent = `${rows.length} of ${tariff.rows.length} rows`;
+
+  fitResultsPane();
 }
+
+// While a search box is focused on a touch device, cap the results table to
+// the strip of screen between the pinned search bar and the top of the
+// on-screen keyboard, so filtered rows stay visible as the user types.
+// Skipped on desktop (fine pointer) and whenever the boxes aren't focused.
+const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+let filterFocused = false;
+
+function fitResultsPane() {
+  const wrap = document.querySelector('.table-wrap');
+  const bar = document.querySelector('.tariff-controls-bar');
+  if (!wrap || !bar) return;
+  if (!isTouch || !filterFocused) {
+    wrap.style.maxHeight = '';
+    return;
+  }
+  const vv = window.visualViewport;
+  const viewBottom = (vv ? vv.height : window.innerHeight) + (vv ? vv.offsetTop : 0);
+  const avail = viewBottom - bar.getBoundingClientRect().bottom - 8;
+  wrap.style.maxHeight = avail > 140 ? `${avail}px` : '';
+}
+
+['originFilter', 'destFilter'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('focus', () => { filterFocused = true; setTimeout(fitResultsPane, 300); });
+  el.addEventListener('blur', () => { filterFocused = false; fitResultsPane(); });
+});
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', fitResultsPane);
+  window.visualViewport.addEventListener('scroll', fitResultsPane);
+}
+window.addEventListener('resize', fitResultsPane);
 
 document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => sortBy(parseInt(th.dataset.col, 10)));

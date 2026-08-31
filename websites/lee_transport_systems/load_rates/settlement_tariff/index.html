@@ -8,7 +8,7 @@
 <script src="../../js/theme.js"></script>
 <script src="../../js/header.js"></script>
 </head>
-<body>
+<body class="tariff-page">
 
 <script>renderSiteHeader('../../');</script>
 
@@ -29,18 +29,19 @@
   </label>
 </div>
 
-<div class="controls">
-  <div>
-    <label for="originFilter">Origin city:</label><br>
-    <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven">
+<div class="tariff-controls-bar">
+  <div class="controls">
+    <div>
+      <label for="originFilter">Origin city:</label><br>
+      <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven">
+    </div>
+    <div>
+      <label for="destFilter">Destination city:</label><br>
+      <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford">
+    </div>
   </div>
-  <div>
-    <label for="destFilter">Destination city:</label><br>
-    <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford">
-  </div>
+  <p class="count" id="rowCount"></p>
 </div>
-
-<p class="count" id="rowCount"></p>
 
 <div class="table-wrap">
 <table>

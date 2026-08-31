@@ -246,6 +246,22 @@ input[type="text"] { width: 160px; }
 .controls.stacked { flex-direction: column; width: fit-content; gap: 24px; }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
+/* Settlement Tariff: pin the search inputs so they stay above the mobile
+   keyboard while typing; logic.js caps .table-wrap height to the space left
+   above the keyboard (via visualViewport) so results update in view. */
+body.tariff-page .tariff-controls-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  padding: 8px 0;
+  margin-bottom: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+body.tariff-page .tariff-controls-bar .controls { margin: 0 auto 6px; }
+body.tariff-page .tariff-controls-bar .count { margin: 0; }
+body.tariff-page .table-wrap { overflow-y: auto; overscroll-behavior: contain; }
+
 /* Tables */
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; margin: 10px auto; background: var(--bg); width: 100%; }
