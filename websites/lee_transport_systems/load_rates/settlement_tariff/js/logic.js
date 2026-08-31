@@ -34,7 +34,7 @@ function toggleChrome() {
   const opening = panel.hidden;
   panel.hidden = !opening;
   btn.setAttribute('aria-expanded', String(opening));
-  btn.textContent = opening ? '▴ Menu ▴' : '▾ Menu ▾';
+  btn.querySelectorAll('.chev').forEach(c => { c.textContent = opening ? '▴' : '▾'; });
 }
 
 function sortBy(col) {

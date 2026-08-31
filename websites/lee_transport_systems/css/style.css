@@ -265,6 +265,7 @@ input[type="text"] { width: 160px; }
   cursor: pointer;
 }
 .chrome-toggle:hover { border-color: var(--sky); }
+.chrome-toggle .chev { font-size: 20px; line-height: 1; vertical-align: -3px; }
 .chrome-panel .tabs { margin: 10px 0; }
 
 .search-bar {
