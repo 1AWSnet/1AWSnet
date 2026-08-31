@@ -8,11 +8,26 @@
 <script src="../../js/theme.js"></script>
 <script src="../../js/header.js"></script>
 </head>
-<body>
+<body class="tariff-page">
 
 <script>renderSiteHeader('../../');</script>
 
 <div class="page">
+
+<div class="sticky-search">
+  <div class="controls">
+    <div>
+      <label for="originFilter">Origin city:</label><br>
+      <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven">
+    </div>
+    <div>
+      <label for="destFilter">Destination city:</label><br>
+      <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford">
+    </div>
+  </div>
+  <p class="count" id="rowCount"></p>
+</div>
+
 <h1>Settlement Tariff</h1>
 
 <div class="tabs">
@@ -27,20 +42,6 @@
     <input type="checkbox" id="showOldRate" onchange="toggleOldRate()">
     <span class="switch-track"><span class="switch-thumb"></span></span>
   </label>
-</div>
-
-<div class="sticky-search">
-  <div class="controls">
-    <div>
-      <label for="originFilter">Origin city:</label><br>
-      <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven">
-    </div>
-    <div>
-      <label for="destFilter">Destination city:</label><br>
-      <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford">
-    </div>
-  </div>
-  <p class="count" id="rowCount"></p>
 </div>
 
 <div class="table-wrap">

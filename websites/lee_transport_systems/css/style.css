@@ -245,19 +245,23 @@ input[type="text"] { width: 160px; }
 .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 16px auto; text-align: left; }
 .controls.stacked { flex-direction: column; width: fit-content; gap: 24px; }
 
-/* Search controls pinned to the top of the viewport while the results below
-   scroll -- keeps the inputs and the live row count in reach on phones
-   without scrolling back up. Same behavior on desktop. */
+/* Search controls locked to the top edge of the screen from page load -- the
+   site header and everything else scroll underneath. logic.js keeps
+   --search-h equal to this bar's height (it can wrap to two rows on narrow
+   phones) so body padding-top offsets it exactly. */
 .sticky-search {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 5;
   background: var(--bg);
-  padding: 12px 0 8px;
+  padding: 12px 16px 8px;
   box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.35);
 }
-.sticky-search .controls { margin: 0 auto 8px; }
+.sticky-search .controls { margin: 0 auto 8px; max-width: 900px; }
 .sticky-search .count { margin: 0; }
+body.tariff-page { padding-top: var(--search-h, 120px); }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
 /* Tables */
