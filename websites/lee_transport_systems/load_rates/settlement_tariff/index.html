@@ -17,13 +17,13 @@
 <div class="sticky-search">
   <div class="controls">
     <div>
-      <label for="originFilter">Origin city:</label><br>
-      <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven"
+      <input id="originFilter" type="text" oninput="render()" aria-label="Origin city"
+             placeholder="Origin (first 3 letters)"
              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
     <div>
-      <label for="destFilter">Destination city:</label><br>
-      <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford"
+      <input id="destFilter" type="text" oninput="render()" aria-label="Destination city"
+             placeholder="Dest. (First 3 letters)"
              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
   </div>
