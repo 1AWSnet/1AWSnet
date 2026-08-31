@@ -97,14 +97,4 @@ document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => sortBy(parseInt(th.dataset.col, 10)));
 });
 
-// Keep --search-h at the sticky search bar's height so the sticky column
-// headers (CSS: thead th { top: var(--search-h) }) sit flush under it.
-function syncSearchOffset() {
-  const bar = document.querySelector('.search-bar');
-  if (bar) document.documentElement.style.setProperty('--search-h', `${bar.offsetHeight}px`);
-}
-window.addEventListener('resize', syncSearchOffset);
-window.addEventListener('load', syncSearchOffset);
-syncSearchOffset();
-
 render();

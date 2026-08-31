@@ -305,17 +305,6 @@ table { border-collapse: collapse; margin: 10px auto; background: var(--bg); wid
 .tight-table th, .tight-table td { padding: 6px 24px; }
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: center; font-size: 14px; color: var(--text); background: var(--bg); white-space: nowrap; }
 th { background: var(--bg-alt); }
-/* Settlement Tariff: pin the column headers right under the sticky search bar
-   while the rows scroll. overflow-x: clip (not auto) keeps the header sticking
-   to the page rather than an inner scroll box; the narrow columns don't need
-   horizontal scrolling. logic.js keeps --search-h at the search bar's height. */
-.tariff-page .table-wrap { overflow-x: clip; }
-.tariff-page thead th {
-  position: sticky;
-  top: var(--search-h, 76px);
-  z-index: 4;
-  box-shadow: inset 0 1px 0 var(--border), inset 0 -1px 0 var(--border);
-}
 tr:nth-child(even) td { background: var(--bg-alt); }
 /* Settlement Tariff: hold the Destination column to the width of its header
    and wrap longer city names instead of widening the column. */
