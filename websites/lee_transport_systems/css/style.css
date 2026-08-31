@@ -291,6 +291,9 @@ table { border-collapse: collapse; margin: 10px auto; background: var(--bg); wid
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: center; font-size: 14px; color: var(--text); background: var(--bg); white-space: nowrap; }
 th { background: var(--bg-alt); }
 tr:nth-child(even) td { background: var(--bg-alt); }
+/* Settlement Tariff: hold the Destination column to the width of its header
+   and wrap longer city names instead of widening the column. */
+.tariff-page td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
 .count { font-size: 13px; color: var(--text-muted); margin: 6px 0; }
 
 /* OCR test harness (load_calculators/haiku/haiku_frame, load_calculators/haiku/haiku_regex) */
