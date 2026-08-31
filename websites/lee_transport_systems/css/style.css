@@ -291,8 +291,9 @@ input[type="search"] { -webkit-appearance: none; appearance: none; }
 .search-bar .controls { margin: 0 auto 6px; max-width: 900px; }
 .search-bar .count { margin: 0; }
 /* >=16px stops iOS Safari from auto-zooming the page when a box is focused;
-   wider than the 160px default so the placeholder hint fits. */
-.search-bar input[type="search"] { font-size: 16px; width: 220px; max-width: 100%; }
+   wider than the 160px default so the placeholder hint fits; red border to
+   make the filters stand out. */
+.search-bar input[type="search"] { font-size: 16px; width: 220px; max-width: 100%; border: 2px solid var(--red); }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
 /* Tables */
@@ -302,6 +303,17 @@ table { border-collapse: collapse; margin: 10px auto; background: var(--bg); wid
 .tight-table th, .tight-table td { padding: 6px 24px; }
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: center; font-size: 14px; color: var(--text); background: var(--bg); white-space: nowrap; }
 th { background: var(--bg-alt); }
+/* Settlement Tariff: pin the column headers right under the sticky search bar
+   while the rows scroll. overflow-x: clip (not auto) keeps the header sticking
+   to the page rather than an inner scroll box; the narrow columns don't need
+   horizontal scrolling. logic.js keeps --search-h at the search bar's height. */
+.tariff-page .table-wrap { overflow-x: clip; }
+.tariff-page thead th {
+  position: sticky;
+  top: var(--search-h, 76px);
+  z-index: 4;
+  box-shadow: inset 0 1px 0 var(--border), inset 0 -1px 0 var(--border);
+}
 tr:nth-child(even) td { background: var(--bg-alt); }
 /* Settlement Tariff: hold the Destination column to the width of its header
    and wrap longer city names instead of widening the column. */
