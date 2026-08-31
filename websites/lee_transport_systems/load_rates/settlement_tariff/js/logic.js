@@ -4,6 +4,7 @@ const ALL_STATES_TARIFF = {
 };
 
 const TARIFFS = [CT_TARIFF, NE_TARIFF, ALL_STATES_TARIFF];
+const TARIFF_LABELS = ['CT', 'MA', 'All States'];
 let activeTariff = 2;
 let sortCol = 1;
 let sortAsc = true;
@@ -85,7 +86,8 @@ function render() {
     tbody.appendChild(tr);
   }
 
-  document.getElementById('rowCount').textContent = `${rows.length} of ${tariff.rows.length} rows`;
+  document.getElementById('rowCount').textContent =
+    `${rows.length} of ${tariff.rows.length} rows from ${TARIFF_LABELS[activeTariff]}.`;
 }
 
 document.querySelectorAll('th[data-col]').forEach(th => {
