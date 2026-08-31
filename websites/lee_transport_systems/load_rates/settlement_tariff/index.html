@@ -33,8 +33,13 @@
 
   <div class="tabs">
     <label class="switch-wrap">
-      <span>Show Old Rates</span>
+      <span>Show: Old Rates</span>
       <input type="checkbox" id="showOldRate" onchange="toggleOldRate()">
+      <span class="switch-track"><span class="switch-thumb"></span></span>
+    </label>
+    <label class="switch-wrap">
+      <span>Hide: East Haven rows as Origin</span>
+      <input type="checkbox" id="hideEastHaven" onchange="render()" checked>
       <span class="switch-track"><span class="switch-thumb"></span></span>
     </label>
   </div>
