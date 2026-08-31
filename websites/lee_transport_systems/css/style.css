@@ -261,6 +261,8 @@ input[type="text"] { width: 160px; }
 }
 .sticky-search .controls { margin: 0 auto 8px; max-width: 900px; }
 .sticky-search .count { margin: 0; }
+/* >=16px stops iOS Safari from auto-zooming the page when a box is focused. */
+.sticky-search input[type="text"] { font-size: 16px; }
 body.tariff-page { padding-top: var(--search-h, 120px); }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 

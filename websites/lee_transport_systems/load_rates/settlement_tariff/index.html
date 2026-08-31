@@ -18,11 +18,13 @@
   <div class="controls">
     <div>
       <label for="originFilter">Origin city:</label><br>
-      <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven">
+      <input id="originFilter" type="text" oninput="render()" placeholder="e.g. New Haven"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
     <div>
       <label for="destFilter">Destination city:</label><br>
-      <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford">
+      <input id="destFilter" type="text" oninput="render()" placeholder="e.g. Hartford"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
   </div>
   <p class="count" id="rowCount"></p>
