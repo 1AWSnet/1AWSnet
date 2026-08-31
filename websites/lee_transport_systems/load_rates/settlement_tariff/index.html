@@ -10,7 +10,7 @@
 </head>
 <body class="tariff-page">
 
-<script>renderSiteHeader('../../');</script>
+<script>renderSiteHeader('../../', true, 'Settlement Tariff');</script>
 
 <div class="page">
 
@@ -30,8 +30,6 @@
   <p class="count" id="rowCount"></p>
 </div>
 
-<h1>Settlement Tariff</h1>
-
 <div class="tabs">
   <button class="tab-btn" data-tariff="0" onclick="switchTariff(0)">CT</button>
   <button class="tab-btn active" data-tariff="2" onclick="switchTariff(2)">All States</button>
@@ -50,8 +48,8 @@
 <table>
   <thead>
     <tr>
-      <th data-col="0">Origin City</th>
-      <th data-col="1">Destination City</th>
+      <th data-col="0">Origin</th>
+      <th data-col="1">Destination</th>
       <th data-col="2">Old Rate</th>
       <th data-col="3">New Rate</th>
     </tr>

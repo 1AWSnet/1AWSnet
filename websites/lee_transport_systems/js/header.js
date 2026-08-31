@@ -2,16 +2,19 @@
 // renderSiteHeader('<relative path to site root>') as the first thing in <body>,
 // so editing this file changes the header on every page at once. Pass false as
 // the second argument to omit the back button (used on the homepage, since
-// there's no parent directory to go up to).
-function renderSiteHeader(homeHref, showBackButton) {
+// there's no parent directory to go up to). Pass a string as the third argument
+// to replace the "Lee Transport Systems" bar text on that page (used where the
+// page needs the vertical room and the back button already covers navigation).
+function renderSiteHeader(homeHref, showBackButton, title) {
   const backBtnHtml = showBackButton === false
     ? ''
     : '<button class="back-btn" id="backBtn" aria-label="Go back">&larr;</button>';
+  const label = title || 'Lee Transport Systems';
   document.write(
     '<header class="site-header">' +
       '<div class="left-group">' +
         backBtnHtml +
-        '<a class="home-link" href="' + homeHref + '">Lee Transport Systems</a>' +
+        '<a class="home-link" href="' + homeHref + '">' + label + '</a>' +
       '</div>' +
       '<div class="menu">' +
         '<button class="hamburger-btn" id="menuBtn" aria-label="Menu" aria-haspopup="true" aria-expanded="false">' +
