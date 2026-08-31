@@ -25,6 +25,17 @@ function toggleOldRate() {
   render();
 }
 
+// "Menu" disclosure: folds the site header, table switcher and Old Rates
+// toggle away so the table has the screen. Collapsed by default.
+function toggleChrome() {
+  const panel = document.getElementById('chromePanel');
+  const btn = document.getElementById('chromeToggle');
+  const opening = panel.hidden;
+  panel.hidden = !opening;
+  btn.setAttribute('aria-expanded', String(opening));
+  btn.textContent = opening ? '▴ Menu ▴' : '▾ Menu ▾';
+}
+
 function sortBy(col) {
   if (sortCol === col) {
     sortAsc = !sortAsc;
@@ -75,24 +86,10 @@ function render() {
   }
 
   document.getElementById('rowCount').textContent = `${rows.length} of ${tariff.rows.length} rows`;
-
-  syncSearchBarOffset();
 }
 
 document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => sortBy(parseInt(th.dataset.col, 10)));
 });
-
-// The search bar is position: fixed at the top of the screen; keep the page
-// content pushed down by exactly its height (it wraps to two rows on narrow
-// phones, so a static value would leave a gap or overlap).
-function syncSearchBarOffset() {
-  const bar = document.querySelector('.sticky-search');
-  if (!bar) return;
-  document.documentElement.style.setProperty('--search-h', `${bar.offsetHeight}px`);
-}
-window.addEventListener('resize', syncSearchBarOffset);
-window.addEventListener('load', syncSearchBarOffset);
-syncSearchBarOffset();
 
 render();

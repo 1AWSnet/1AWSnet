@@ -245,26 +245,41 @@ input[type="text"] { width: 160px; }
 .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 16px auto; text-align: left; }
 .controls.stacked { flex-direction: column; width: fit-content; gap: 24px; }
 
-/* Search controls locked to the top edge of the screen from page load -- the
-   site header and everything else scroll underneath. logic.js keeps
-   --search-h equal to this bar's height (it can wrap to two rows on narrow
-   phones) so body padding-top offsets it exactly. */
-.sticky-search {
-  position: fixed;
+/* Collapsible chrome: the "Menu" disclosure folds away the site header, the
+   table switcher and the Old Rates toggle so the search bar is the only thing
+   pinned above the table. position: sticky (not fixed) is deliberate -- it is
+   far less prone to the detached/jittery behavior iOS Safari gives fixed
+   elements when the soft keyboard opens. */
+.chrome-toggle {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  letter-spacing: 2px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+.chrome-toggle:hover { border-color: var(--sky); }
+.chrome-panel .tabs { margin: 10px 0; }
+
+.search-bar {
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 5;
   background: var(--bg);
-  padding: 12px 16px 8px;
-  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.35);
+  margin: 0 auto 8px;
+  padding: 8px 0;
 }
-.sticky-search .controls { margin: 0 auto 8px; max-width: 900px; }
-.sticky-search .count { margin: 0; }
+.search-bar .controls { margin: 0 auto 6px; max-width: 900px; }
+.search-bar .count { margin: 0; }
 /* >=16px stops iOS Safari from auto-zooming the page when a box is focused;
    wider than the 160px default so the placeholder hint fits. */
-.sticky-search input[type="text"] { font-size: 16px; width: 220px; max-width: 100%; }
-body.tariff-page { padding-top: var(--search-h, 120px); }
+.search-bar input[type="text"] { font-size: 16px; width: 220px; max-width: 100%; }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
 /* Tables */

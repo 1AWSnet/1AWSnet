@@ -10,11 +10,30 @@
 </head>
 <body class="tariff-page">
 
-<script>renderSiteHeader('../../', true, 'Settlement Tariff');</script>
-
 <div class="page">
 
-<div class="sticky-search">
+<button class="chrome-toggle" id="chromeToggle" type="button"
+        onclick="toggleChrome()" aria-expanded="false" aria-controls="chromePanel">&#9662; Menu &#9662;</button>
+
+<div class="chrome-panel" id="chromePanel" hidden>
+  <script>renderSiteHeader('../../', true, 'Settlement Tariff');</script>
+
+  <div class="tabs">
+    <button class="tab-btn" data-tariff="0" onclick="switchTariff(0)">CT</button>
+    <button class="tab-btn active" data-tariff="2" onclick="switchTariff(2)">All States</button>
+    <button class="tab-btn" data-tariff="1" onclick="switchTariff(1)">MA</button>
+  </div>
+
+  <div class="tabs">
+    <label class="switch-wrap">
+      <span>Show Old Rates</span>
+      <input type="checkbox" id="showOldRate" onchange="toggleOldRate()">
+      <span class="switch-track"><span class="switch-thumb"></span></span>
+    </label>
+  </div>
+</div>
+
+<div class="search-bar">
   <div class="controls">
     <div>
       <input id="originFilter" type="text" oninput="render()" aria-label="Origin city"
@@ -28,20 +47,6 @@
     </div>
   </div>
   <p class="count" id="rowCount"></p>
-</div>
-
-<div class="tabs">
-  <button class="tab-btn" data-tariff="0" onclick="switchTariff(0)">CT</button>
-  <button class="tab-btn active" data-tariff="2" onclick="switchTariff(2)">All States</button>
-  <button class="tab-btn" data-tariff="1" onclick="switchTariff(1)">MA</button>
-</div>
-
-<div class="tabs">
-  <label class="switch-wrap">
-    <span>Show Old Rates</span>
-    <input type="checkbox" id="showOldRate" onchange="toggleOldRate()">
-    <span class="switch-track"><span class="switch-thumb"></span></span>
-  </label>
 </div>
 
 <div class="table-wrap">
