@@ -20,10 +20,13 @@
 
   <h1>Settlement Tariff</h1>
 
-  <div class="tabs">
-    <button class="tab-btn" data-tariff="0" onclick="switchTariff(0)">CT</button>
-    <button class="tab-btn active" data-tariff="2" onclick="switchTariff(2)">All States</button>
-    <button class="tab-btn" data-tariff="1" onclick="switchTariff(1)">MA</button>
+  <div class="table-picker" role="group" aria-label="Destinations by states">
+    <p class="table-picker-label">Destinations by states</p>
+    <div class="tabs">
+      <button class="tab-btn" data-tariff="0" onclick="switchTariff(0)">CT &amp; NJ</button>
+      <button class="tab-btn active" data-tariff="2" onclick="switchTariff(2)">All States</button>
+      <button class="tab-btn" data-tariff="1" onclick="switchTariff(1)">MA, ME, RI &amp; NH</button>
+    </div>
   </div>
 
   <div class="tabs">
