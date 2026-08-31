@@ -1,9 +1,9 @@
-// Combined view: every CT (232) row plus every Maine-Mass-NH-RI (237) row.
-const COMBINED_TARIFF = {
+// "All States" view: every CT (232) row plus every Maine-Mass-NH-RI (237) row.
+const ALL_STATES_TARIFF = {
   rows: [...CT_TARIFF.rows, ...NE_TARIFF.rows],
 };
 
-const TARIFFS = [CT_TARIFF, NE_TARIFF, COMBINED_TARIFF];
+const TARIFFS = [CT_TARIFF, NE_TARIFF, ALL_STATES_TARIFF];
 let activeTariff = 2;
 let sortCol = 1;
 let sortAsc = true;
@@ -12,7 +12,7 @@ function switchTariff(i) {
   activeTariff = i;
   sortCol = 1;
   sortAsc = true;
-  document.querySelectorAll('.tab-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === i));
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.tariff) === i));
   render();
 }
 
