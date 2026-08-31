@@ -223,7 +223,7 @@ const CT_TARIFF = {
     ["East Haven, CT", "Milford, CT", 50, 55],
     ["New Haven, CT", "Milford, CT", 50, 55],
     ["Bridgeport, CT", "Milldale, CT", 80, 90],
-    ["East Haven, CT", "Milldale, CT", 60, 65],
+    ["East Haven, CT", "Milldale, CT", 60, 90],
     ["New Haven, CT", "Milldale, CT", 60, 90],
     ["Bridgeport, CT", "Monroe, CT", 60, 65],
     ["East Haven, CT", "Monroe, CT", 90, 95],
