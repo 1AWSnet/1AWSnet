@@ -232,7 +232,7 @@ button, .tab-btn {
 
 /* Forms */
 label { font-size: 14px; }
-input[type="text"], input[type="number"] {
+input[type="text"], input[type="search"], input[type="number"] {
   padding: 8px;
   border: 1px solid var(--input-border);
   border-radius: 6px;
@@ -241,7 +241,8 @@ input[type="text"], input[type="number"] {
   color: var(--text);
 }
 input[type="number"] { width: 60px; text-align: center; }
-input[type="text"] { width: 160px; }
+input[type="text"], input[type="search"] { width: 160px; }
+input[type="search"] { -webkit-appearance: none; appearance: none; }
 .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 16px auto; text-align: left; }
 .controls.stacked { flex-direction: column; width: fit-content; gap: 24px; }
 
@@ -280,7 +281,7 @@ input[type="text"] { width: 160px; }
 .search-bar .count { margin: 0; }
 /* >=16px stops iOS Safari from auto-zooming the page when a box is focused;
    wider than the 160px default so the placeholder hint fits. */
-.search-bar input[type="text"] { font-size: 16px; width: 220px; max-width: 100%; }
+.search-bar input[type="search"] { font-size: 16px; width: 220px; max-width: 100%; }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
 /* Tables */
