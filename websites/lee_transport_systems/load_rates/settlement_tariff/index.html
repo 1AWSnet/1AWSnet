@@ -36,14 +36,16 @@
 <div class="search-bar">
   <div class="controls">
     <div>
-      <input id="originFilter" type="text" oninput="render()" aria-label="Origin city"
+      <input id="originFilter" type="text" oninput="render()" aria-label="Filter by origin"
              placeholder="Origin (First 3 letters)"
-             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             data-lpignore="true" data-1p-ignore data-form-type="other">
     </div>
     <div>
-      <input id="destFilter" type="text" oninput="render()" aria-label="Destination city"
+      <input id="destFilter" type="text" oninput="render()" aria-label="Filter by destination"
              placeholder="Dest. (First 3 letters)"
-             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             data-lpignore="true" data-1p-ignore data-form-type="other">
     </div>
   </div>
   <p class="count" id="rowCount"></p>
