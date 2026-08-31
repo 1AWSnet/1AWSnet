@@ -75,10 +75,13 @@ function render() {
   tbody.innerHTML = '';
   for (const r of rows) {
     const [origin, dest, oldRate, newRate] = r;
+    // Origin shows the city only (drop ", ST") to keep that column narrow;
+    // filtering and sorting still run against the full value.
+    const originCity = origin.split(',')[0];
     const tr = document.createElement('tr');
     const oldCell = showOld ? `<td>$${oldRate.toFixed(2)}</td>` : '';
     tr.innerHTML = `
-      <td>${origin}</td>
+      <td>${originCity}</td>
       <td>${dest}</td>
       ${oldCell}
       <td>$${newRate.toFixed(2)}</td>
