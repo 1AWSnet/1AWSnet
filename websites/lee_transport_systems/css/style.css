@@ -244,23 +244,21 @@ input[type="number"] { width: 60px; text-align: center; }
 input[type="text"] { width: 160px; }
 .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 16px auto; text-align: left; }
 .controls.stacked { flex-direction: column; width: fit-content; gap: 24px; }
-.rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
-/* Settlement Tariff: pin the search inputs so they stay above the mobile
-   keyboard while typing; logic.js caps .table-wrap height to the space left
-   above the keyboard (via visualViewport) so results update in view. */
-body.tariff-page .tariff-controls-bar {
+/* Search controls pinned to the top of the viewport while the results below
+   scroll -- keeps the inputs and the live row count in reach on phones
+   without scrolling back up. Same behavior on desktop. */
+.sticky-search {
   position: sticky;
   top: 0;
   z-index: 5;
   background: var(--bg);
-  padding: 8px 0;
-  margin-bottom: 4px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  padding: 12px 0 8px;
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.35);
 }
-body.tariff-page .tariff-controls-bar .controls { margin: 0 auto 6px; }
-body.tariff-page .tariff-controls-bar .count { margin: 0; }
-body.tariff-page .table-wrap { overflow-y: auto; overscroll-behavior: contain; }
+.sticky-search .controls { margin: 0 auto 8px; }
+.sticky-search .count { margin: 0; }
+.rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
 
 /* Tables */
 .table-wrap { overflow-x: auto; }
