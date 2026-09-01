@@ -3,7 +3,7 @@
  * Row format: [origin, destination, oldRate, newRate]
  */
 
-const CT_TARIFF = {
+const CT_NJ = {
   number: 232,
   name: "CT Pay Rates A-Z",
   effective: "1950-01-01",
@@ -243,7 +243,7 @@ const CT_TARIFF = {
     ["Bridgeport, CT", "New Canaan, CT", 80, 85],
     ["East Haven, CT", "New Canaan, CT", 95, 100],
     ["New Haven, CT", "New Canaan, CT", 95, 100],
-    ["East Haven, CT", "New Hartford, CT", 105, 110],
+    ["East Haven, CT", "New Hartford, CT", 90, 95],
     ["New Haven, CT", "New Hartford, CT", 90, 95],
     ["New Windsor, NY", "New Hartford, CT", 105, 110],
     ["Philadelphia, PA", "New Hartford, CT", 60, 65],
@@ -285,7 +285,7 @@ const CT_TARIFF = {
     ["New Haven, CT", "North Stonington, CT", 100, 105],
     ["Bridgeport, CT", "Norwalk, CT", 65, 70],
     ["East Haven, CT", "Norwalk, CT", 80, 85],
-    ["New Haven, CT", "Norwalk, CT", 80, 100],
+    ["New Haven, CT", "Norwalk, CT", 80, 85],
     ["Bridgeport, CT", "Norwich, CT", 115, 120],
     ["East Haven, CT", "Norwich, CT", 95, 100],
     ["New Haven, CT", "Norwich, CT", 95, 100],
@@ -503,7 +503,7 @@ const CT_TARIFF = {
   ]
 };
 
-const NE_TARIFF = {
+const MA_ME_RI_NH = {
   number: 237,
   name: "Maine-Mass-NewHamp-RhodeIsland",
   effective: "1950-01-01",

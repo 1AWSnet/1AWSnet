@@ -1,9 +1,11 @@
 // "All States" view: every CT (232) row plus every Maine-Mass-NH-RI (237) row.
-const ALL_STATES_TARIFF = {
-  rows: [...CT_TARIFF.rows, ...NE_TARIFF.rows],
+const ALL_STATES = {
+  rows: [...CT_NJ.rows, ...MA_ME_RI_NH.rows],
 };
 
-const TARIFFS = [CT_TARIFF, NE_TARIFF, ALL_STATES_TARIFF];
+// Index order is fixed: 0 = CT_NJ, 1 = MA_ME_RI_NH, 2 = ALL_STATES.
+// The HTML tab buttons (data-tariff / switchTariff) and TARIFF_LABELS must match.
+const TARIFFS = [CT_NJ, MA_ME_RI_NH, ALL_STATES];
 const TARIFF_LABELS = ['CT & NJ', 'MA, ME, RI & NH', 'All States'];
 let activeTariff = 2;
 let sortCol = 1;
@@ -41,9 +43,12 @@ function render() {
   const showOld = document.getElementById('showOldRate').checked;
   const originFilter = document.getElementById('originFilter').value.trim().toLowerCase();
   const destFilter = document.getElementById('destFilter').value.trim().toLowerCase();
-  // East Haven origin rows duplicate the New Haven ones in the source tables,
-  // so they are hidden unless this toggle is on. Rows with East Haven as the
-  // destination are left alone.
+
+  // East Haven rates are mirroring/duplicating the New Haven rates in the rates.js...
+  // I don't know the reason behind the mirroring/duplicating.
+  // That was how Lee Transport Systems provided the rates.
+  // So the East Haven rates are hidden unless this toggle is on.
+  // Rows with East Haven as the destination are left alone.
   const showEastHaven = document.getElementById('showEastHaven').checked;
 
   document.querySelector('th[data-col="2"]').style.display = showOld ? '' : 'none';

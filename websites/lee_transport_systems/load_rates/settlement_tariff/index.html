@@ -15,7 +15,7 @@
 <div class="page">
 
 <button class="chrome-toggle" id="chromeToggle" type="button"
-        onclick="toggleChrome()" aria-expanded="false" aria-controls="chromePanel"><span class="chev">&#9662;</span> Menu <span class="chev">&#9662;</span></button>
+        onclick="toggleTopMenuBar()" aria-expanded="false" aria-controls="chromePanel"><span class="chev">&#9662;</span> Menu <span class="chev">&#9662;</span></button>
 
 <div class="chrome-panel" id="chromePanel" hidden>
   <script>renderSiteHeader('../../');</script>
@@ -26,15 +26,15 @@
     <p class="table-picker-label">Destinations by states</p>
     <div class="tabs">
       <button class="tab-btn" data-tariff="0" onclick="switchTariff(0)">CT &amp; NJ</button>
-      <button class="tab-btn active" data-tariff="2" onclick="switchTariff(2)">All States</button>
       <button class="tab-btn" data-tariff="1" onclick="switchTariff(1)">MA, ME, RI &amp; NH</button>
+      <button class="tab-btn active" data-tariff="2" onclick="switchTariff(2)">All States</button>
     </div>
   </div>
 
   <div class="toggle-group" role="group" aria-label="Hide/Show Columns or Rows">
     <p class="table-picker-label">Hide/Show Columns or Rows</p>
     <label class="switch-wrap">
-      <span>Old Rates (column)</span>
+      <span>Old Rate (column)</span>
       <input type="checkbox" id="showOldRate" onchange="toggleOldRate()">
       <span class="switch-track"><span class="switch-thumb"></span></span>
     </label>
