@@ -31,15 +31,16 @@
     </div>
   </div>
 
-  <div class="tabs">
+  <div class="toggle-group" role="group" aria-label="Hide/Show Columns or Rows">
+    <p class="table-picker-label">Hide/Show Columns or Rows</p>
     <label class="switch-wrap">
-      <span>Show: Old Rates</span>
+      <span>Old Rates (column)</span>
       <input type="checkbox" id="showOldRate" onchange="toggleOldRate()">
       <span class="switch-track"><span class="switch-thumb"></span></span>
     </label>
     <label class="switch-wrap">
-      <span>Hide: East Haven rows from Origin</span>
-      <input type="checkbox" id="hideEastHaven" onchange="render()" checked>
+      <span>Origin East Haven (rows)</span>
+      <input type="checkbox" id="showEastHaven" onchange="render()">
       <span class="switch-track"><span class="switch-thumb"></span></span>
     </label>
   </div>

@@ -41,17 +41,17 @@ function render() {
   const showOld = document.getElementById('showOldRate').checked;
   const originFilter = document.getElementById('originFilter').value.trim().toLowerCase();
   const destFilter = document.getElementById('destFilter').value.trim().toLowerCase();
-  // East Haven origin rows duplicate the New Haven ones in the source tables;
-  // the toggle (on by default) drops loads originating from East Haven. Rows
-  // with East Haven as the destination are left alone.
-  const hideEastHaven = document.getElementById('hideEastHaven').checked;
+  // East Haven origin rows duplicate the New Haven ones in the source tables,
+  // so they are hidden unless this toggle is on. Rows with East Haven as the
+  // destination are left alone.
+  const showEastHaven = document.getElementById('showEastHaven').checked;
 
   document.querySelector('th[data-col="2"]').style.display = showOld ? '' : 'none';
 
   let rows = tariff.rows.filter(r =>
     r[0].toLowerCase().includes(originFilter) &&
     r[1].toLowerCase().includes(destFilter) &&
-    (!hideEastHaven || !r[0].toLowerCase().includes('east haven'))
+    (showEastHaven || !r[0].toLowerCase().includes('east haven'))
   );
 
   rows = rows.slice().sort((a, b) => {

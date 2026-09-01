@@ -280,6 +280,17 @@ input[type="search"] { -webkit-appearance: none; appearance: none; }
 .table-picker-label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
 .table-picker .tabs { margin: 0; }
 
+/* Boxed group of column/row visibility switches, right-aligned. */
+.toggle-group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px 12px;
+  margin: 12px auto;
+  max-width: 900px;
+}
+.toggle-group .switch-wrap { display: flex; justify-content: flex-end; width: 100%; }
+.toggle-group .switch-wrap + .switch-wrap { margin-top: 8px; }
+
 .search-bar {
   position: sticky;
   top: 0;
