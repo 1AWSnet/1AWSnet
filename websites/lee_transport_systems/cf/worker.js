@@ -1,9 +1,8 @@
 import { handleOcr } from "./haiku_frame.js";
-import { handleOcrRaw } from "./haiku_regex.js";
 import { handleStraddle } from "./straddle.js";
 
-// Worker entry point for the lee-transport-systems site. Routes POST /api/ocr-frame,
-// /api/ocr-regex and /api/straddle-ocr; everything else falls through to static assets
+// Worker entry point for the lee-transport-systems site. Routes POST /api/ocr-frame
+// and /api/straddle-ocr; everything else falls through to static assets
 // (see ./wrangler.toml). ANTHROPIC_API_KEY, STRADDLE_OCR_URL and STRADDLE_OCR_SECRET are
 // Cloudflare secrets — never in this repo, never sent to the browser.
 
@@ -15,10 +14,6 @@ export default {
     // (configured in wrangler.toml) — no other routing belongs here.
     if (url.pathname === "/api/ocr-frame" && request.method === "POST") {
       return handleOcr(request, env);
-    }
-
-    if (url.pathname === "/api/ocr-regex" && request.method === "POST") {
-      return handleOcrRaw(request, env);
     }
 
     // GPU PaddleOCR box over a Cloudflare Tunnel, with Haiku as the fallback — see

@@ -1,15 +1,11 @@
-// Forked from haiku/haiku_shared_js/render.js so Straddle-driven fixes never change the
-// Haiku pages' behavior (and vice versa) -- the two copies are free to diverge from
-// here on. Unmodified at fork time.
-//
 // Renders a structured OCR result (structure.js's structureOcrResult output) into a
-// page's trips table and summary line. Depends on getOcrPageElements (dom-helpers.js),
-// TERMINALS / findTerminalEntry (terminals.js), and findTariffRate /
-// allDestinationCities (structure.js) -- all this folder's own forks, loaded before
-// this script.
+// page's trips table and summary line. Used by haiku_frame/index.html. Depends on
+// getOcrPageElements (dom-helpers.js), TERMINALS / findTerminalEntry (terminals.js),
+// and findTariffRate / allDestinationCities (structure.js) -- all loaded before this
+// script.
 //
 // OCR can misread or fully drop a trip's origin terminal or destination city. A row
-// that already resolved (parse-rec-texts.js found a real match) just shows plain
+// that already resolved (Haiku found a real match) just shows plain
 // text -- there's nothing to fix. Only an unresolved row gets an editable control: a
 // dropdown of known terminals for the origin, a city text box with autocomplete for
 // the destination. Picking a value recomputes that trip's rate immediately and updates

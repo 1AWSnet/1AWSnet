@@ -1,13 +1,13 @@
 import { runHaikuOcr } from "./haiku_frame.js";
 
 // Straddle OCR route (POST /api/straddle-ocr). Primary engine is a GPU PaddleOCR box
-// (../load_rates/load_calculators/straddle/server/app.py) reached over a Cloudflare
+// (../load_rates/load_calculator/straddle/server/app.py) reached over a Cloudflare
 // Tunnel; the fallback is Haiku (runHaikuOcr), used whenever that box is unreachable,
 // too slow, or answers with an error. The two engines reply in different shapes on
 // purpose:
 //   - the tunnel returns app.py's raw   {"pages":[{"lines":[...]}]}
 //   - Haiku returns the structured      {"date","driverName","rows":[...]}
-// ../load_rates/load_calculators/straddle/js/parse-rec-texts.js turns the former into
+// ../load_rates/load_calculator/straddle/js/parse-rec-texts.js turns the former into
 // the latter in the browser, so both converge before structureOcrResult(). This handler
 // only forwards -- it never rewrites the shape. The X-OCR-Engine response header says
 // which engine actually answered ("cuda" or "haiku") so the page, and a person in

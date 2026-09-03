@@ -1,7 +1,7 @@
-// DOM-building helpers shared by haiku_frame/index.html and haiku_regex/index.html.
+// DOM-building helpers for haiku_frame/index.html.
 
-// Looks up the element IDs both pages' markup has in common -- same IDs, same
-// structure, in both files. Called once at the top of each page's script.
+// Looks up the element IDs the page's markup exposes. Called once at the top of
+// the page's script.
 function getOcrPageElements() {
   return {
     fileInput: document.getElementById('photo'),

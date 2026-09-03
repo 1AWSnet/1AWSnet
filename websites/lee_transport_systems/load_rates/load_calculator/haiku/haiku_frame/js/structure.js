@@ -1,18 +1,13 @@
-// Forked from haiku/haiku_shared_js/structure.js so Straddle-driven fixes never change
-// the Haiku pages' behavior (and vice versa) -- the two copies are free to diverge from
-// here on.
-//
-// Turns parse-rec-texts.js's flat per-row extraction into trip records with a matched
-// settlement-tariff rate. Runs entirely in the browser -- no extra OCR call per photo --
-// so parsing stays a plain per-row transcription of what's printed on the page, and all
-// business logic (pairing LLD/LUL rows into trips, city/state parsing, tariff lookup,
-// totals) lives here, where it's exact and can be fixed without touching OCR at all. The
-// parser never pairs a trip's LLD row with its LUL row itself -- it only tags each row
-// with its own trip number, and groupRowsIntoTrips below does the pairing
-// deterministically.
-// Depends on CT_NJ/MA_ME_RI_NH from ../../../settlement_tariff/js/data.js and
-// findTerminal from terminals.js (this folder's own copy), both loaded before this
-// script.
+// Turns the raw OCR JSON from /api/ocr-frame (the server's structured-extraction schema)
+// into trip records with a matched settlement-tariff rate. Runs entirely in the browser — no
+// extra Haiku call per photo — so the extraction schema stays a plain per-row
+// transcription of what's printed on the page, and all business logic (pairing LLD/LUL
+// rows into trips, city/state parsing, tariff lookup, totals) lives here, where it's
+// exact and can be fixed without touching the OCR prompt. In particular, Haiku never
+// pairs a trip's LLD row with its LUL row itself — it only tags each row with its own
+// trip number, and groupRowsIntoTrips below does the pairing deterministically.
+// Depends on CT_NJ/MA_ME_RI_NH from ../../../../settlement_tariff/js/data.js and
+// findTerminal from terminals.js, both loaded before this script.
 
 const TARIFFS = [CT_NJ, MA_ME_RI_NH];
 
@@ -23,8 +18,6 @@ const TARIFFS = [CT_NJ, MA_ME_RI_NH];
 // properly-cased name shown on screen. Add more entries here as they're found.
 const CITY_MISREADS = {
   bradford: 'Branford', // OCR misread of Branford (drops the "n")
-  enfied: 'Enfield', // PP-StructureV3 misread of Enfield (drops the "l")
-  betny: 'Bethany', // PP-StructureV3 misread of Bethany (drops the "ha")
 };
 
 // LLD/LUL addresses are always printed as "Street, City, ST" — the tariff only keys
@@ -51,17 +44,6 @@ function allDestinationCities() {
   return [...cities].sort();
 }
 
-const DESTINATION_CITY_KEYS = new Set(allDestinationCities().map((c) => c.toLowerCase()));
-
-// parseCityState only checks that an address had a city/state-shaped tail -- it has no
-// idea whether that city is a real, known one (a misread like "Betny" parses out fine
-// structurally). Without this check, render.js's buildDestinationCell sees a non-empty
-// city and treats the row as already resolved, so the editable "UNRECOGNIZED" box (the
-// only way to actually fix a bad city) never appears.
-function isKnownDestination(cityState) {
-  return !!cityState && DESTINATION_CITY_KEYS.has(cityStateKey(cityState));
-}
-
 // Returns null (not a $0 rate) when no tariff row matches, so a bad/unlisted
 // origin-destination pair is visibly unresolved instead of silently paying nothing.
 function findTariffRate(origin, destination) {
@@ -72,15 +54,7 @@ function findTariffRate(origin, destination) {
   for (const tariff of TARIFFS) {
     for (const [rowOrigin, rowDest, oldRate, newRate] of tariff.rows) {
       if (rowOrigin.toLowerCase() === originKey && rowDest.toLowerCase() === destKey) {
-        // Carries the tariff table's own origin/destination text back with the rate --
-        // it's transcribed straight from the real tariff PDF, so it's always correctly
-        // spelled and cased. Once a trip is matched, there's no reason to keep showing
-        // whatever case OCR happened to read (e.g. "WindsOr LOCks, CT") when the
-        // verified real spelling is already sitting right here.
-        return {
-          tariffNumber: tariff.number, tariffName: tariff.name, oldRate, newRate,
-          canonicalOrigin: rowOrigin, canonicalDestination: rowDest,
-        };
+        return { tariffNumber: tariff.number, tariffName: tariff.name, oldRate, newRate };
       }
     }
   }
@@ -88,18 +62,17 @@ function findTariffRate(origin, destination) {
 }
 
 // Stands in for an LLD/LUL row that should exist for a trip number but doesn't (e.g.
-// the OCR pipeline tagged a row with the wrong trip number and left this trip short a
-// leg) — kept visible as "(missing)" rather than silently dropping the trip, so a
-// grouping problem shows up on screen instead of just vanishing from the total.
+// Haiku tagged a row with the wrong trip number and left this trip short a leg) — kept
+// visible as "(missing)" rather than silently dropping the trip, so a grouping problem
+// shows up on screen instead of just vanishing from the total.
 const MISSING_ROW = { name: '(missing)', address: '', orderNumber: '' };
 
-// Groups the parser's flat, per-row transcription (each row tagged with its own trip
-// number and LLD/LUL type) into trips. This is plain array grouping, not something the
-// OCR/parsing step has any part in — it can't mis-pair an LLD with the wrong LUL
-// because it never pairs them at all. Handles one LLD to one LUL (the common case), one
-// LLD to several LULs, and several LLDs to one LUL. Several LLDs to several LULs for the
-// same trip number isn't handled yet (falls back to pairing by position, which may not
-// be right for that case).
+// Groups Haiku's flat, per-row transcription (each row tagged with its own trip number
+// and LLD/LUL type) into trips. This is plain array grouping, not something Haiku has
+// any part in — it can't mis-pair an LLD with the wrong LUL because it never pairs them
+// at all. Handles one LLD to one LUL (the common case), one LLD to several LULs, and
+// several LLDs to one LUL. Several LLDs to several LULs for the same trip number isn't
+// handled yet (falls back to pairing by position, which may not be right for that case).
 function groupRowsIntoTrips(rows) {
   const byTrip = new Map();
   for (const row of rows) {
@@ -132,15 +105,6 @@ function structureOcrResult(ocrResult) {
     const origin = findTerminalCityState(lld.name);
     const destination = parseCityState(lul.address);
     const rate = findTariffRate(origin, destination);
-    // Once matched, shows the tariff row's own destination text instead of the
-    // OCR-parsed one -- see findTariffRate's comment on canonicalDestination. Origin
-    // never needs this: it already comes straight from curated TERMINALS, not OCR.
-    // Otherwise, a destination that isn't a real known city (see isKnownDestination)
-    // is treated as unresolved rather than shown as plain text, so it gets the
-    // editable "UNRECOGNIZED" box instead of silently displaying a misread city name.
-    const resolvedDestination = rate
-      ? { ...destination, ...parseCityState(rate.canonicalDestination) }
-      : isKnownDestination(destination) ? destination : null;
 
     return {
       tripNumber,
@@ -151,7 +115,7 @@ function structureOcrResult(ocrResult) {
         ...origin,
         terminalLines: findTerminal(lld.name),
       },
-      destination: { name: lul.name, address: lul.address, ...resolvedDestination },
+      destination: { name: lul.name, address: lul.address, ...destination },
       rate,
     };
   });

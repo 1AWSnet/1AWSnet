@@ -1,9 +1,8 @@
 // Wires up haiku_frame/index.html's upload flow: the Upload button, the Copy button, and
 // the file input, plus the /api/ocr-frame JSON response -> structureOcrResult ->
 // renderTrips pipeline. Depends on getOcrPageElements / wireFileInput / wireCopyButton /
-// startUploadCounter / stopUploadCounter (../../haiku_shared_js/dom-helpers.js),
-// structureOcrResult (../../haiku_shared_js/structure.js), and renderTrips
-// (../../haiku_shared_js/render.js) -- all loaded before this script.
+// startUploadCounter / stopUploadCounter (dom-helpers.js), structureOcrResult
+// (structure.js), and renderTrips (render.js) -- all loaded before this script.
 // Doesn't re-destructure tripsTable/summaryEl here even though they're used below --
 // render.js already declared those consts, and redeclaring the same const in a second
 // <script> tag is a SyntaxError that silently kills this whole file.

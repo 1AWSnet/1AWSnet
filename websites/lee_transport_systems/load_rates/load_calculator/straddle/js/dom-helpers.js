@@ -1,4 +1,4 @@
-// Forked from haiku/haiku_shared_js/dom-helpers.js so Straddle-driven fixes never
+// Forked from haiku/haiku_frame/js/dom-helpers.js so Straddle-driven fixes never
 // change the Haiku pages' behavior (and vice versa) -- the two copies are free to
 // diverge from here on.
 //

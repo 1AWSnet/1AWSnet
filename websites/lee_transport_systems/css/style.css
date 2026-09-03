@@ -147,7 +147,7 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* Vertically centers .page content below the header -- opt-in via body.centered-page
-   so short nav-menu pages (Load Rates, Load Calculators) can match the hero's 4-way
+   so short nav-menu pages (Load Rates, Load Calculator) can match the hero's 4-way
    centering, while long-content pages (tables, OCR tools) keep their normal top-down
    layout. */
 body.centered-page {
@@ -322,7 +322,7 @@ tr:nth-child(even) td { background: var(--bg-alt); }
 .tariff-page td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
 .count { font-size: 13px; color: var(--text-muted); margin: 6px 0; }
 
-/* OCR test harness (load_calculators/haiku/haiku_frame, load_calculators/haiku/haiku_regex) */
+/* OCR test harness (load_calculator/haiku/haiku_frame, load_calculator/straddle) */
 #status { margin: 1rem 0; font-weight: bold; }
 .upload-counter { font-size: 2.5rem; margin: 4px 0; }
 pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; text-align: left; border-radius: 6px; }

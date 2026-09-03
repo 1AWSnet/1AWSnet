@@ -1,10 +1,9 @@
 // Converts PP-StructureV3's rec_texts (flat OCR text lines from the /structure
-// endpoint) into the same {date, driverName, rows: [...]} shape parse-raw-text.js
-// produces for Haiku, so it can be fed straight into structureOcrResult() (structure.js,
-// this folder's own fork of haiku/haiku_shared_js/structure.js) -- all the trip
-// pairing / city-state parsing / tariff lookup / terminal lookup logic there is reused
-// as-is. Depends on findTerminal from terminals.js (also this folder's own fork),
-// loaded before this script.
+// endpoint) into the {date, driverName, rows: [...]} shape structureOcrResult()
+// expects (structure.js, this folder's own fork of haiku/haiku_frame/js/structure.js)
+// -- all the trip pairing / city-state parsing / tariff lookup / terminal lookup logic
+// there is reused as-is. Depends on findTerminal from terminals.js (also this folder's
+// own fork), loaded before this script.
 //
 // Validated against real PP-StructureV3 output from 3 real Driver Summary Report
 // photos before being wired into the page. PP-StructureV3's line order is less
