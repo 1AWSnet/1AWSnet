@@ -6,10 +6,10 @@
 // exact and can be fixed without touching the OCR prompt. In particular, Haiku never
 // pairs a trip's LLD row with its LUL row itself — it only tags each row with its own
 // trip number, and groupRowsIntoTrips below does the pairing deterministically.
-// Depends on CT_TARIFF/NE_TARIFF from ../../../settlement_tariff/js/data.js and
+// Depends on CT_NJ/MA_ME_RI_NH from ../../../settlement_tariff/js/data.js and
 // findTerminal from terminals.js, both loaded before this script.
 
-const TARIFFS = [CT_TARIFF, NE_TARIFF];
+const TARIFFS = [CT_NJ, MA_ME_RI_NH];
 
 // Corrects known OCR misreads of a city name before tariff lookup/display, so a
 // single misread letter doesn't silently turn into "no tariff match" -- same idea as
