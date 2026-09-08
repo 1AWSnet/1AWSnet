@@ -1,0 +1,22 @@
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #12141a;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .message {
+    color: #f4f1ea;
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-align: center;
+    padding: 0 1.5rem;
+  }
