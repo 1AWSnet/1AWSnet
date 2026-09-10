@@ -187,6 +187,8 @@ body.centered-page .hero { flex: 1; }
   letter-spacing: 0.5px;
 }
 .badge h1 { color: inherit; font-size: inherit; margin: 0; }
+/* Badge used as a page title: keep the pill shape, restore heading size. */
+.badge.heading { font-size: 1.15rem; padding: 8px 18px; letter-spacing: 0; }
 .links {
   margin-top: 24px;
   display: flex;
