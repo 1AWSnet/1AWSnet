@@ -2,6 +2,15 @@ function roundToNearest5(n) {
   return Math.round(n / 5) * 5;
 }
 
+// Big up/down buttons next to the Hourly Rate box: step by $1, never below 0.
+function stepRate(dir) {
+  const input = document.getElementById('hourlyRate');
+  const current = parseFloat(input.value) || 0;
+  const next = Math.max(0, current + dir);
+  input.value = Number.isInteger(next) ? next : next.toFixed(2);
+  render();
+}
+
 function render() {
   const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
   const tbody = document.getElementById('rows');
@@ -38,7 +47,9 @@ function render() {
   }
 
   const tableEl = document.querySelector('table');
-  document.getElementById('disclaimer').style.width = tableEl.offsetWidth + 'px';
+  const disclaimer = document.getElementById('disclaimer');
+  disclaimer.style.width = tableEl.offsetWidth + 'px';
+  disclaimer.style.marginInline = 'auto';
 }
 
 render();

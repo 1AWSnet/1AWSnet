@@ -186,6 +186,7 @@ body.centered-page .hero { flex: 1; }
   color: var(--red);
   letter-spacing: 0.5px;
 }
+.badge h1 { color: inherit; font-size: inherit; margin: 0; }
 .links {
   margin-top: 24px;
   display: flex;
@@ -308,6 +309,28 @@ input[type="search"] { -webkit-appearance: none; appearance: none; }
    make the filters stand out. */
 .search-bar input[type="search"] { font-size: 16px; width: 220px; max-width: 100%; border: 2px solid var(--red); }
 .rate-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 16px auto; text-align: left; width: fit-content; }
+/* Large touch-friendly up/down buttons flanking the Hourly Rate box; the native
+   number spinners are hidden here since these replace them (invisible on mobile). */
+.rate-stepper { display: flex; align-items: stretch; gap: 10px; }
+.rate-stepper input[type="number"] { width: 90px; font-size: 22px; }
+.rate-stepper input[type="number"]::-webkit-outer-spin-button,
+.rate-stepper input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.rate-stepper input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.step-btn {
+  width: 64px;
+  min-height: 48px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.step-btn:hover { border-color: var(--sky); }
+.step-btn:active { background: var(--bg-alt); }
 
 /* Tables */
 .table-wrap { overflow-x: auto; }

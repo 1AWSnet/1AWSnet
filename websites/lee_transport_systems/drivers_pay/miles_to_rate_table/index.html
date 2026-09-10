@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=5">
-<title>Rate Table</title>
+<title>🛣️ Miles to Rate Table 🚛</title>
 <link rel="stylesheet" href="../../css/style.css">
 <script src="../../js/theme.js"></script>
 <script src="../../js/header.js"></script>
@@ -13,11 +13,15 @@
 <script>renderSiteHeader('../../');</script>
 
 <div class="page">
-<h2 id="title">Rate Table</h2>
+<div class="badge"><h1>🛣️ Miles to Rate Table 🚛</h1></div>
 
 <div class="rate-row">
   <label for="hourlyRate">Hourly Rate</label>
-  <input id="hourlyRate" type="number" value="35" step="any" oninput="render()">
+  <div class="rate-stepper">
+    <button type="button" class="step-btn" aria-label="Decrease hourly rate" onclick="stepRate(-1)">&#9660;</button>
+    <input id="hourlyRate" type="number" value="35" step="any" inputmode="decimal" oninput="render()">
+    <button type="button" class="step-btn" aria-label="Increase hourly rate" onclick="stepRate(1)">&#9650;</button>
+  </div>
 </div>
 
 <div class="table-wrap">
@@ -27,11 +31,11 @@
   </thead>
   <tbody id="rows"></tbody>
 </table>
-
-<p id="disclaimer" class="sub" style="margin-top: 20px; box-sizing: border-box; text-align: left;">
-Disclaimer: This table uses a very specific formula to calculate the aproximate speed of a tractor trailer.<br><br>The table also assumes 30 minutes to load and 30 minutes to unload.
-</p>
 </div>
+
+<p id="disclaimer" class="sub" style="margin-top: 20px; text-align: left;">
+Disclaimer: This table uses a custom formula to calculate the approximate speed of a tractor trailer.<br><br>The "Rounded Rate" is calculated based on 30 minutes to load and 30 minutes to unload.
+</p>
 </div>
 
 <script src="js/logic.js"></script>
