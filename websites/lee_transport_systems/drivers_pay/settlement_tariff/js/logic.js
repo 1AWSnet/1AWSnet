@@ -53,14 +53,26 @@ function render() {
 
   document.querySelector('th[data-col="2"]').style.display = showOld ? '' : 'none';
 
+  // Each row gets two extra columns: 4 = distance, 5 = hourly rate. Both use the
+  // rounded miles from distances.json (the rows of miles_to_rate_table).
+  // Hourly is what the New Rate works out to per hour for that trip, using the
+  // formula in miles_to_rate_table. That table stops at MAX_MILES, so longer
+  // trips (and any pair missing from distances.json) have no hourly.
   let rows = tariff.rows.filter(r =>
     r[0].toLowerCase().includes(originFilter) &&
     r[1].toLowerCase().includes(destFilter) &&
     (showEastHaven || !r[0].toLowerCase().includes('east haven'))
-  );
+  ).map(r => {
+    const d = (distances[r[0]] || {})[r[1]];
+    const miles = d ? d.rounded : null;
+    const hourly = miles !== null && miles <= MAX_MILES ? impliedHourlyRate(miles, r[3]) : null;
+    return [...r, miles, hourly];
+  });
 
-  rows = rows.slice().sort((a, b) => {
+  rows = rows.sort((a, b) => {
     const av = a[sortCol], bv = b[sortCol];
+    // Blank cells (no distance / no hourly) always sort last, in either direction.
+    if (av === null || bv === null) return av === bv ? 0 : av === null ? 1 : -1;
     let cmp;
     if (typeof av === 'number' && typeof bv === 'number') {
       cmp = av - bv;
@@ -73,7 +85,7 @@ function render() {
   const tbody = document.getElementById('rows');
   tbody.innerHTML = '';
   for (const r of rows) {
-    const [origin, dest, oldRate, newRate] = r;
+    const [origin, dest, oldRate, newRate, miles, hourly] = r;
     // Origin shows the city only (drop ", ST") to keep that column narrow;
     // filtering and sorting still run against the full value.
     const originCity = origin.split(',')[0];
@@ -84,6 +96,8 @@ function render() {
       <td>${dest}</td>
       ${oldCell}
       <td>$${newRate.toFixed(2)}</td>
+      <td>${miles === null ? '—' : miles}</td>
+      <td>${hourly === null ? '???' : '$' + hourly.toFixed(2)}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -96,4 +110,11 @@ document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => sortBy(parseInt(th.dataset.col, 10)));
 });
 
-render();
+// { "Origin, ST": { "Dest, ST": { miles, rounded } } }, filled in once distances.json loads.
+let distances = {};
+
+fetch('js/distances.json')
+  .then(res => res.json())
+  .then(json => { distances = json.distances; })
+  .catch(err => console.error('Could not load distances.json:', err))
+  .finally(render);
