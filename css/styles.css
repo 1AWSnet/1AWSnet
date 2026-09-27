@@ -36,6 +36,13 @@ p{margin:0 0 1em;max-width:65ch}
 .w-br{background:repeating-linear-gradient(135deg,var(--white) 0 4px,var(--brown) 4px 8px)}
 .br{background:var(--brown)}
 
+/* Logo letters in T568B cable colours: reuse the wire classes above, clipped to the text */
+.lc{-webkit-background-clip:text;background-clip:text;color:transparent}
+.lc.w-o{-webkit-text-stroke:.03em var(--orange)}
+.lc.w-g{-webkit-text-stroke:.03em var(--green)}
+.lc.w-b{-webkit-text-stroke:.03em var(--blue)}
+.lc.w-br{-webkit-text-stroke:.03em var(--brown)}
+
 /* Header */
 .site-header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4rem}
@@ -107,6 +114,35 @@ ul.spec .note{display:block;color:var(--muted);font-size:.95rem}
 @media (max-width:880px){.overview{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){.overview{grid-template-columns:1fr}}
 
+/* Service icons: white icon on a coloured square, left of each service title */
+.overview a .ico,.svc .ico{display:flex;align-items:center;gap:.65rem}
+.ico::before{content:"";flex:none;width:2.1rem;height:2.1rem;border-radius:.4rem;
+  background:var(--icon) center/66% no-repeat,var(--tile)}
+.svc .ico::before{width:2.5rem;height:2.5rem}
+.overview .ico+span{display:block;padding-left:2.75rem}
+.page-head .ico{display:flex;align-items:flex-start;gap:.9rem}
+.page-head .ico::before{width:1em;height:1em;border-radius:.18em;margin-top:.07em}
+.i-network{--icon:url(../images/icons/network.svg);--tile:#2A5FC4}
+.i-virtualization{--icon:url(../images/icons/virtualization.svg);--tile:#7B4FD0}
+.i-data-protection{--icon:url(../images/icons/data-protection.svg);--tile:#00796B}
+.i-voip{--icon:url(../images/icons/voip.svg);--tile:#2E7D32}
+.i-surveillance{--icon:url(../images/icons/surveillance.svg);--tile:#C62828}
+.i-software{--icon:url(../images/icons/software.svg);--tile:#D2621F}
+.i-opsec{--icon:url(../images/icons/opsec.svg);--tile:#A86B00}
+.i-automation{--icon:url(../images/icons/automation.svg);--tile:#AD1457}
+.i-it-support{--icon:url(../images/icons/it-support.svg);--tile:#00838F}
+.i-consultations{--icon:url(../images/icons/consultations.svg);--tile:#77502E}
+/* OpSec page section icons */
+.i-phishing{--icon:url(../images/icons/phishing.svg);--tile:#2A5FC4}
+.i-impersonation{--icon:url(../images/icons/impersonation.svg);--tile:#7B4FD0}
+.i-information{--icon:url(../images/icons/information.svg);--tile:#00796B}
+.i-passwords{--icon:url(../images/icons/passwords.svg);--tile:#D2621F}
+.i-physical{--icon:url(../images/icons/physical.svg);--tile:#C62828}
+.i-devices{--icon:url(../images/icons/devices.svg);--tile:#00838F}
+.i-response{--icon:url(../images/icons/response.svg);--tile:#AD1457}
+.i-training{--icon:url(../images/icons/training.svg);--tile:#2E7D32}
+.i-future{--icon:url(../images/icons/future.svg);--tile:#77502E}
+
 /* Panels */
 .panel{background:var(--surface);border:1px solid var(--line);padding:1.5rem}
 .rate{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap}
@@ -125,6 +161,22 @@ article.news time{color:var(--muted);font-weight:600;font-size:.95rem}
 article.news h2{margin-top:.3rem}
 .sources{font-size:.95rem;color:var(--muted)}
 .sources ul{margin:.3rem 0 0;padding-left:1.2rem}
+/* News list cards and article pages (pages/news/) */
+.news-card{display:grid;grid-template-columns:minmax(0,18rem) minmax(0,1fr);gap:1.5rem;border-top:2px solid var(--ink);padding:1.4rem 0 2rem;max-width:56rem}
+.news-card .thumb img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.news-card time{color:var(--muted);font-weight:600;font-size:.95rem}
+.news-card h2,.news-card h3{margin:.3rem 0 .5rem}
+.news-card h2 a,.news-card h3 a{color:var(--ink);text-decoration:none}
+.news-card h2 a:hover,.news-card h3 a:hover{text-decoration:underline}
+.news-card .more{font-weight:700}
+@media (max-width:640px){.news-card{grid-template-columns:1fr;gap:1rem}}
+.news-article{max-width:46rem;padding-top:2rem;padding-bottom:1rem}
+.news-article .back{margin-bottom:1.2rem;font-weight:600}
+.news-article time{color:var(--muted);font-weight:600;font-size:.95rem}
+.news-article h1{margin-top:.3rem}
+.news-figure{margin:1.4rem 0 1.6rem}
+.news-figure img{display:block;width:100%;height:auto}
+.news-figure figcaption{font-size:.85rem;color:var(--muted);margin-top:.4rem}
 
 /* FAQ */
 details{border-bottom:1px solid var(--line);max-width:48rem}
