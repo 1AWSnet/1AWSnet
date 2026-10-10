@@ -1,0 +1,61 @@
+/* Colours, font and wire strip copied from the main site's css/styles.css */
+:root{
+  --steel:#E4E8EC;--surface:#F6F8FA;--ink:#152033;--muted:#4A5568;--line:#C4CBD4;
+  --orange:#D2621F;--green:#2B7A3D;--blue:#2A5FC4;--brown:#77502E;--white:#FFFFFF;
+  --focus:#2A5FC4;
+}
+@media (prefers-color-scheme:dark){
+  :root{--steel:#0E1520;--surface:#162131;--ink:#E6EBF1;--muted:#A5B0BE;--line:#2B394B;
+  --orange:#EE8547;--green:#4FAE63;--blue:#6C9BF0;--brown:#B98A5E;--white:#E6EBF1;--focus:#6C9BF0}
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:6rem;scroll-behavior:smooth}
+body{margin:0;background:var(--steel);color:var(--ink);
+  font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:1.0625rem;line-height:1.6}
+a{color:var(--blue);text-underline-offset:.18em}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.wrap{max-width:56rem;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
+h1,h2{line-height:1.15;font-stretch:112%;margin:0 0 .6em}
+h1{font-size:clamp(2rem,5.2vw,3.2rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(1.4rem,3vw,1.85rem);font-weight:750}
+
+/* Wire strip: T568B pin order */
+.wires{display:flex;height:6px}
+.wires span{flex:1}
+.w-o{background:repeating-linear-gradient(135deg,var(--white) 0 4px,var(--orange) 4px 8px)}
+.o{background:var(--orange)}
+.w-g{background:repeating-linear-gradient(135deg,var(--white) 0 4px,var(--green) 4px 8px)}
+.b{background:var(--blue)}
+.w-b{background:repeating-linear-gradient(135deg,var(--white) 0 4px,var(--blue) 4px 8px)}
+.g{background:var(--green)}
+.w-br{background:repeating-linear-gradient(135deg,var(--white) 0 4px,var(--brown) 4px 8px)}
+.br{background:var(--brown)}
+
+/* Header with letter jump links, stays on screen while scrolling */
+.top{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line)}
+.letters{display:flex;flex-wrap:wrap;gap:.1rem .2rem;padding-top:.5rem;padding-bottom:.5rem}
+.letters a{display:inline-block;min-width:1.8rem;padding:.15rem .3rem;text-align:center;font-weight:700;
+  color:var(--ink);text-decoration:none;border-bottom:3px solid transparent}
+.letters a:hover{border-bottom-color:var(--orange)}
+.head{padding-top:2rem;padding-bottom:.5rem}
+.head p{color:var(--muted);margin:0}
+
+/* Acronym list: acronym | meaning, one row per entry */
+section{padding-top:1.5rem}
+section h2{border-bottom:2px solid var(--ink);padding-bottom:.3rem;margin-bottom:0}
+dl{display:grid;grid-template-columns:minmax(6rem,9rem) minmax(0,1fr);margin:0}
+dt,dd{padding:.6rem 0;border-bottom:1px solid var(--line)}
+dt{font-weight:800;font-stretch:112%;padding-right:1rem}
+dd{margin:0}
+dd b{display:block}
+dd span{display:block;color:var(--muted);font-size:.95rem}
+@media (max-width:560px){
+  dl{grid-template-columns:1fr}
+  dt{border-bottom:0;padding-bottom:0}
+  dd{padding-top:.1rem}
+  dd b{font-weight:500}
+}
+
+footer{margin-top:3rem;padding-top:1rem;padding-bottom:2rem;color:var(--muted);font-size:.85rem}
