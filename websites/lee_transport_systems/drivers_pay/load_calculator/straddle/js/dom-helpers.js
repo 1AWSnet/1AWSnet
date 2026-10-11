@@ -114,7 +114,7 @@ function resizeTo(src, w, h) {
 }
 
 // Adaptive-threshold binarization (OpenCV's adaptiveThreshold + THRESH_BINARY): a pixel
-// goes white if its grey value exceeds (local mean - ADAPTIVE_C), else black. The local
+// goes white if its gray value exceeds (local mean - ADAPTIVE_C), else black. The local
 // mean is a box average over an ADAPTIVE_BLOCK-square window, via a separable sliding-
 // window sum so cost doesn't grow with window size. app.py used the Gaussian-weighted
 // variant; a flat box mean is a close, much shorter approximation for a page scan.
@@ -126,16 +126,16 @@ function binarizeInPlace(imageData) {
   // Float32, not Float64: a 2000px image is ~3M pixels and this runs on phones -- half
   // the memory, and the local-mean sums (a few thousand values <= 255) stay well inside
   // Float32's exact-integer range.
-  const grey = new Float32Array(n);
+  const gray = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const o = i * 4;
-    grey[i] = 0.299 * data[o] + 0.587 * data[o + 1] + 0.114 * data[o + 2];
+    gray[i] = 0.299 * data[o] + 0.587 * data[o + 1] + 0.114 * data[o + 2];
   }
 
-  const mean = boxBlur(grey, width, height, (ADAPTIVE_BLOCK - 1) / 2);
+  const mean = boxBlur(gray, width, height, (ADAPTIVE_BLOCK - 1) / 2);
 
   for (let i = 0; i < n; i++) {
-    const v = grey[i] > mean[i] - ADAPTIVE_C ? 255 : 0;
+    const v = gray[i] > mean[i] - ADAPTIVE_C ? 255 : 0;
     const o = i * 4;
     data[o] = data[o + 1] = data[o + 2] = v;
     data[o + 3] = 255;

@@ -272,7 +272,7 @@ input[type="search"] { -webkit-appearance: none; appearance: none; }
 .chrome-toggle .chev { font-size: 20px; line-height: 1; vertical-align: -3px; }
 .chrome-panel .tabs { margin: 10px 0; }
 
-/* Boxed, labelled group around the CT / All States / MA table switcher. */
+/* Boxed, labeled group around the CT / All States / MA table switcher. */
 .table-picker {
   border: 1px solid var(--border);
   border-radius: 8px;
