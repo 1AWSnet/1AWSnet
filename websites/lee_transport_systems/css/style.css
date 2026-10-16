@@ -147,8 +147,8 @@ p.sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* Vertically centers .page content below the header -- opt-in via body.centered-page
-   so short nav-menu pages (Load Rates, Load Calculator) can match the hero's 4-way
-   centering, while long-content pages (tables, OCR tools) keep their normal top-down
+   so short nav-menu pages (Load Rates, Drivers Pay) can match the hero's 4-way
+   centering, while long-content pages (tables) keep their normal top-down
    layout. */
 body.centered-page {
   display: flex;
@@ -346,44 +346,6 @@ tr:nth-child(even) td { background: var(--bg-alt); }
    and wrap longer city names instead of widening the column. */
 .tariff-page td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
 .count { font-size: 13px; color: var(--text-muted); margin: 6px 0; }
-
-/* OCR test harness (load_calculator/haiku/haiku_frame, load_calculator/straddle) */
-#status { margin: 1rem 0; font-weight: bold; }
-.upload-counter { font-size: 2.5rem; margin: 4px 0; }
-pre { background: var(--bg-alt); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; text-align: left; border-radius: 6px; }
-#tripsTable { display: none; }
-#tripsTable td, #tripsTable th { text-align: center; white-space: normal; }
-#tripsTable select, #tripsTable input[type="text"] {
-  width: 100%;
-  max-width: 180px;
-  font-size: 13px;
-  padding: 4px 6px;
-  border: 1px solid var(--input-border);
-  border-radius: 6px;
-  background: var(--input-bg);
-  color: var(--text);
-}
-#tripsTable select.unmatched, #tripsTable input[type="text"].unmatched { border-color: var(--red); }
-.trip-bubble {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 50%;
-  background: var(--bg-alt);
-  border: 1px solid var(--red);
-  color: var(--text);
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin-bottom: 3px;
-}
-.rate-amount { font-size: 1.5em; font-weight: 700; color: var(--text); }
-.unmatched { color: var(--red); font-weight: bold; }
-#summary { margin-top: 0.75rem; font-weight: bold; }
-details { margin-top: 1.5rem; text-align: left; }
-details summary { cursor: pointer; color: var(--sky); }
 
 @media (max-width: 480px) {
   th, td { font-size: 16px; padding: 8px 6px; }
